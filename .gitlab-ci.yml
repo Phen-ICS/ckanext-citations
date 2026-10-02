@@ -30,11 +30,18 @@ lint:ruff-format:
 security:bandit:
   stage: validate
   script:
-    - pip install bandit
+    # bandit needs the "toml" extra to parse pyproject.toml on Python < 3.11
+    # (no stdlib tomllib yet).
+    - pip install 'bandit[toml]'
     - bandit -c pyproject.toml -r ckanext
 
 test:pure-unit:
   stage: validate
+  variables:
+    # These tests import only scoring.py/package_extras.py (no ckan import
+    # at all), so the conftest.py guard that requires --ckan-ini=test.ini
+    # doesn't apply here - there is no CKAN config to protect.
+    CITATIONS_ALLOW_NON_TEST_INI: "1"
   script:
     - pip install pytest==7.4.4 responses
     - pytest ckanext/citations/tests/test_scoring.py ckanext/citations/tests/test_package_extras.py
