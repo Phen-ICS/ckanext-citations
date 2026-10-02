@@ -1,0 +1,48 @@
+[project]
+name = "ckanext-citations"
+version = "0.1.0"
+description = "Citation tracking (cited-by via OpenAlex/DataCite Event Data), dataset disruption index and per-researcher S-index, displayed on the dataset page."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "AGPL-3.0-or-later" }
+authors = [
+    { name = "ICS", email = "groupe-info-ics@igbmc.fr" }
+]
+keywords = ["CKAN", "data", "citations", "bibliometrics"]
+dependencies = [
+    "requests",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest==7.4.4",
+    "pytest-cov==4.1.0",
+    "responses",
+]
+
+[project.entry-points."ckan.plugins"]
+citations = "ckanext.citations.plugin:CitationsPlugin"
+
+[build-system]
+requires = ["setuptools<77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+exclude = ["docs"]
+
+[tool.setuptools.package-data]
+"ckanext.citations.templates" = ["*", "**/*"]
+"ckanext.citations.migration" = ["*", "**/*"]
+"ckanext.citations.tests" = ["test.ini"]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+ignore = ["EXE001"]
+
+[tool.bandit]
+exclude_dirs = ["ckanext/citations/tests"]

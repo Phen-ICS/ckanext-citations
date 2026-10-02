@@ -1,0 +1,40 @@
+# Minimal CI for a brand-new extension: lint + bandit + the pure (no-CKAN,
+# no-DB, no-network) unit tests for the scoring/parsing logic. Matches the
+# "minimal CI" precedent set on ckanext-oaipmh. Package build/publish and
+# the fair3r-docker-alt deploy trigger are deferred until this plugin is
+# proven out - see ckanext-fair3r's .gitlab-ci.yml for that fuller pipeline
+# shape when it's time to add it here too.
+
+stages:
+  - validate
+
+default:
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python:3.10-slim
+  tags:
+    - ics-docker
+  before_script:
+    - python -m pip install --upgrade pip
+
+lint:ruff:
+  stage: validate
+  script:
+    - pip install ruff==0.16.0
+    - ruff check ckanext
+
+lint:ruff-format:
+  stage: validate
+  script:
+    - pip install ruff==0.16.0
+    - ruff format --check ckanext
+
+security:bandit:
+  stage: validate
+  script:
+    - pip install bandit
+    - bandit -c pyproject.toml -r ckanext
+
+test:pure-unit:
+  stage: validate
+  script:
+    - pip install pytest==7.4.4 responses
+    - pytest ckanext/citations/tests/test_scoring.py ckanext/citations/tests/test_package_extras.py

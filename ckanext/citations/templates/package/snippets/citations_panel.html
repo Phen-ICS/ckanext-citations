@@ -1,0 +1,112 @@
+{% set stats = h.citations_get_stats(pkg_dict.id, pkg_dict) %}
+{% if stats %}
+<section class="module" id="citations-panel">
+  <div class="module-content">
+    <h2>{{ _('FAIR & Impact') }}</h2>
+
+    <table class="table table-condensed">
+      <tbody>
+        <tr>
+          <th scope="row">{{ _('Citations') }}</th>
+          <td>
+            {{ stats.citation_count }}
+            {% if stats.last_checked %}
+              <small class="text-muted">
+                ({{ _('last checked') }} {{ h.render_datetime(stats.last_checked) }})
+              </small>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">
+            {{ _('Disruption index') }}
+            <i class="fa fa-info-circle" title="{{ _('Wu, Wang & Evans (2019): whether works citing this dataset tend to supersede it (closer to +1) or build on it alongside its own references (closer to -1).') }}"></i>
+          </th>
+          <td>
+            {% if stats.disruption_index is not none %}
+              {{ '%.2f' % stats.disruption_index }}
+            {% else %}
+              <span class="text-muted">{{ _('not enough data yet') }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% if stats.coauthors %}
+          <tr>
+            <th scope="row">{{ _('S-index') }}</th>
+            <td>
+              {{ stats.top_s_index }}
+              {% if stats.coauthors|length > 1 %}
+                <small class="text-muted">({{ _('highest among co-authors') }})</small>
+                <details>
+                  <summary>{{ _('All co-authors') }}</summary>
+                  <ul class="list-unstyled">
+                    {% for author in stats.coauthors %}
+                      <li>{{ author.name or author.orcid }} — {{ _('S-index') }}: {{ author.s_index }}</li>
+                    {% endfor %}
+                  </ul>
+                </details>
+              {% endif %}
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    {% if stats.citing_works %}
+      <h3>{{ _('Citing works') }}</h3>
+      <table class="table table-condensed">
+        <thead>
+          <tr>
+            <th>{{ _('Title') }}</th>
+            <th>{{ _('Authors') }}</th>
+            <th>{{ _('Year') }}</th>
+            <th>{{ _('Venue') }}</th>
+            <th>{{ _('DOI') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for work in stats.citing_works[:10] %}
+            <tr>
+              <td>{{ work.title or '—' }}</td>
+              <td>{{ (work.authors or [])|map(attribute='name')|select|join(', ') }}</td>
+              <td>{{ work.year or '—' }}</td>
+              <td>{{ work.venue or '—' }}</td>
+              <td>
+                {% if work.doi %}
+                  <a href="https://doi.org/{{ work.doi }}" target="_blank" rel="noopener">{{ work.doi }}</a>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% if stats.citing_works|length > 10 %}
+        <details>
+          <summary>{{ _('Show all %(count)s citing works', count=stats.citing_works|length) }}</summary>
+          <table class="table table-condensed">
+            <tbody>
+              {% for work in stats.citing_works[10:] %}
+                <tr>
+                  <td>{{ work.title or '—' }}</td>
+                  <td>{{ (work.authors or [])|map(attribute='name')|select|join(', ') }}</td>
+                  <td>{{ work.year or '—' }}</td>
+                  <td>{{ work.venue or '—' }}</td>
+                  <td>
+                    {% if work.doi %}
+                      <a href="https://doi.org/{{ work.doi }}" target="_blank" rel="noopener">{{ work.doi }}</a>
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </details>
+      {% endif %}
+    {% endif %}
+  </div>
+</section>
+{% endif %}
