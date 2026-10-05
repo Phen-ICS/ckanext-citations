@@ -37,24 +37,38 @@ def get_published_doi(dataset_dict):
 
 
 def get_creator_orcids(dataset_dict):
-    """List of (orcid, display_name) for every creator who has an ORCID
-    nameIdentifier in the dataset's DataCite metadata."""
+    """List of (orcid, display_name) for every creator with an ORCID.
+
+    Two shapes exist in the DataCite extras: the FDF/DataCite shape
+    (nameIdentifiers with nameIdentifierScheme) and the flat shape written by
+    the FAIR3R converter (identifiers with scheme, and full_name).
+    """
     creators = get_json_extra(dataset_dict, 'datacite.creators') or []
     result = []
     for creator in creators:
         if not isinstance(creator, dict):
             continue
-        for name_id in creator.get('nameIdentifiers') or []:
-            scheme = (name_id.get('nameIdentifierScheme') or '').upper()
-            if scheme != 'ORCID':
+        name = (
+            creator.get('name')
+            or creator.get('full_name')
+            or creator.get('creatorName')
+        )
+        entries = [
+            (entry.get('nameIdentifierScheme'), entry.get('nameIdentifier'))
+            for entry in creator.get('nameIdentifiers') or []
+            if isinstance(entry, dict)
+        ] + [
+            (entry.get('scheme'), entry.get('identifier'))
+            for entry in creator.get('identifiers') or []
+            if isinstance(entry, dict)
+        ]
+        for scheme, raw in entries:
+            if (scheme or '').upper() != 'ORCID':
                 continue
-            raw = name_id.get('nameIdentifier') or ''
-            orcid = raw.rsplit('/', 1)[-1].strip()
+            orcid = (raw or '').rsplit('/', 1)[-1].strip()
             if orcid:
-                result.append(
-                    (orcid, creator.get('name') or creator.get('creatorName'))
-                )
-            break
+                result.append((orcid, name))
+                break
     return result
 
 

@@ -10,26 +10,8 @@ from ckanext.citations.model import AuthorSIndex, CitationStats, CitingWork
 def citations_get_stats(package_id, package_dict=None):
     """Everything the citations_panel.html snippet needs for one dataset.
     When the dataset has never been checked, 'checked' is False and the
-    numbers are empty, so the panel can still say so."""
-    stats = Session.get(CitationStats, package_id)
-    if stats is None:
-        return {
-            'checked': False,
-            'citation_count': None,
-            'disruption_index': None,
-            'last_checked': None,
-            'coauthors': [],
-            'top_s_index': None,
-            'citing_works': [],
-        }
-
-    citing_works = (
-        Session.query(CitingWork)
-        .filter(CitingWork.package_id == package_id)
-        .order_by(CitingWork.year.desc().nullslast())
-        .all()
-    )
-
+    citation numbers are empty; the co-authors are still listed, with an
+    S-index of 0 until it has been computed."""
     coauthors = []
     if package_dict is not None:
         for orcid, name in get_creator_orcids(package_dict):
@@ -42,6 +24,26 @@ def citations_get_stats(package_id, package_dict=None):
                 }
             )
     coauthors.sort(key=lambda a: a['s_index'], reverse=True)
+    top_s_index = coauthors[0]['s_index'] if coauthors else None
+
+    stats = Session.get(CitationStats, package_id)
+    if stats is None:
+        return {
+            'checked': False,
+            'citation_count': None,
+            'disruption_index': None,
+            'last_checked': None,
+            'coauthors': coauthors,
+            'top_s_index': top_s_index,
+            'citing_works': [],
+        }
+
+    citing_works = (
+        Session.query(CitingWork)
+        .filter(CitingWork.package_id == package_id)
+        .order_by(CitingWork.year.desc().nullslast())
+        .all()
+    )
 
     return {
         'checked': True,
@@ -49,7 +51,7 @@ def citations_get_stats(package_id, package_dict=None):
         'disruption_index': stats.disruption_index,
         'last_checked': stats.last_checked,
         'coauthors': coauthors,
-        'top_s_index': coauthors[0]['s_index'] if coauthors else None,
+        'top_s_index': top_s_index,
         'citing_works': [
             {
                 'title': cw.title,

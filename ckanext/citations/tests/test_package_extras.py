@@ -56,3 +56,19 @@ def test_get_reference_dois_filters_by_relation_and_identifier_type():
         extras=[{'key': 'datacite.relatedIdentifiers', 'value': json.dumps(related)}]
     )
     assert get_reference_dois(pkg) == ['10.1111/aaa']
+
+
+def test_get_creator_orcids_reads_flat_identifiers_shape():
+    creators = [
+        {
+            'full_name': 'bouri, laurent',
+            'identifiers': [
+                {
+                    'identifier': 'https://orcid.org/0000-0002-2297-1559',
+                    'scheme': 'ORCID',
+                }
+            ],
+        }
+    ]
+    pkg = _pkg(extras=[{'key': 'datacite.creators', 'value': json.dumps(creators)}])
+    assert get_creator_orcids(pkg) == [('0000-0002-2297-1559', 'bouri, laurent')]
