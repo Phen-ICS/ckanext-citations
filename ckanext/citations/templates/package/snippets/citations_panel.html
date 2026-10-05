@@ -1,3 +1,16 @@
+<style>
+  .citations-tip { position: relative; display: inline-block; margin-left: 6px; color: #777; cursor: help; font-weight: normal; }
+  .citations-tip::after {
+    content: attr(data-tip);
+    position: absolute; left: 0; top: 140%; z-index: 20;
+    width: 300px; padding: 8px 10px;
+    background: #333; color: #fff; font-size: 12px; line-height: 1.4;
+    border-radius: 4px; white-space: normal;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity 0.1s;
+  }
+  .citations-tip:hover::after, .citations-tip:focus::after { opacity: 1; visibility: visible; }
+</style>
 {% set stats = h.citations_get_stats(pkg_dict.id, pkg_dict) %}
 {% if stats %}
 <section class="module" id="citations-panel">
@@ -18,21 +31,24 @@
           </td>
         </tr>
         <tr>
-          <th scope="row">{{ _('Disruption index') }}</th>
+          <th scope="row">
+            {{ _('Disruption index') }}
+            <span class="citations-tip" tabindex="0" data-tip="{{ _('Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works citing this dataset tend to replace it; close to -1 means they build on it together with its own references. Uses the dataset References/Cites related identifiers when present.') }}"><i class="fa fa-info-circle"></i></span>
+          </th>
           <td>
             {% if stats.disruption_index is not none %}
               {{ '%.2f' % stats.disruption_index }}
             {% else %}
               <span class="text-muted">{{ _('not enough data yet') }}</span>
             {% endif %}
-            <p class="help-block small">
-              {{ _('Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works citing this dataset tend to replace it; close to -1 means they build on it together with its own references. Uses the dataset\'s References/Cites related identifiers when present.') }}
-            </p>
           </td>
         </tr>
         {% if stats.coauthors %}
           <tr>
-            <th scope="row">{{ _('S-index') }}</th>
+            <th scope="row">
+              {{ _('S-index') }}
+              <span class="citations-tip" tabindex="0" data-tip="{{ _('Number of distinct researchers (identified by ORCID) who have cited at least one of this author FAIR3R datasets. Shown for the highest co-author with an ORCID.') }}"><i class="fa fa-info-circle"></i></span>
+            </th>
             <td>
               {{ stats.top_s_index }}
               {% if stats.coauthors|length > 1 %}
@@ -46,9 +62,6 @@
                   </ul>
                 </details>
               {% endif %}
-              <p class="help-block small">
-                {{ _('Number of distinct researchers (identified by ORCID) who have cited at least one of this author\'s FAIR3R datasets. Shown for the highest co-author with an ORCID.') }}
-              </p>
             </td>
           </tr>
         {% endif %}
