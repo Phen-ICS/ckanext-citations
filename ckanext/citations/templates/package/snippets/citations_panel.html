@@ -31,7 +31,7 @@
                 <details>
                   <summary>{{ _('Missing fields') }} ({{ completeness.missing|length }})</summary>
                   <ul class="list-unstyled">
-                    {% for section, label, required in completeness.missing[:30] %}
+                    {% for section, label, required in completeness.missing %}
                       <li>{{ section }} — {{ label }}{% if required %} <strong>*</strong>{% endif %}</li>
                     {% endfor %}
                   </ul>
