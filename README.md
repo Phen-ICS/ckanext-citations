@@ -66,7 +66,7 @@ to the focal work's reference set before classifying citing works.
 ```ini
 # Contact email sent as OpenAlex's "polite pool" mailto param (better rate
 # limits, not auth). Optional but recommended.
-ckanext.citations.contact_email = groupe-info-ics@igbmc.fr
+ckanext.citations.contact_email = your-team@example.org
 
 # Pause between outbound API calls during a refresh, in seconds.
 ckanext.citations.request_pause_seconds = 0.1
