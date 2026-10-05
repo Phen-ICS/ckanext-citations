@@ -86,5 +86,5 @@ job, same pattern as `fair3r update-schema`.
 ## Tests
 
 ```shell
-docker exec -u ckan -it ckan-app pytest --ckan-ini=/plugins/ckanext-citations/test.ini /plugins/ckanext-citations/ckanext/citations/tests
+docker exec -u ckan -it ckan-app pytest --ckan-ini=/plugins/ckanext-citations/ckanext/citations/tests/test.ini /plugins/ckanext-citations/ckanext/citations/tests
 ```

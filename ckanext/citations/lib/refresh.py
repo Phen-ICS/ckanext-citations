@@ -239,12 +239,13 @@ def _update_sindex_contributions(pkg, citing_works, now):
 
 
 def _refresh_author_sindex(orcid, author_name, now):
+    Session.flush()
     count = (
         Session.query(CitingResearcher)
         .filter(CitingResearcher.author_orcid == orcid)
         .count()
     )
-    record = Session.get(AuthorSIndex, orcid)
+    record = Session.query(AuthorSIndex).filter(AuthorSIndex.orcid == orcid).first()
     if record is None:
         record = AuthorSIndex(orcid=orcid, dataset_count=0)
         Session.add(record)
