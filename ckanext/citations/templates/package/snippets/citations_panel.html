@@ -25,7 +25,10 @@
         {% if completeness %}
           {% set bar_class = {"red": "citations-bar-red", "orange": "citations-bar-orange", "green": "citations-bar-green"}[completeness.band] %}
           <tr>
-            <th scope="row">{{ _('Completeness') }}</th>
+            <th scope="row">
+              {{ _('Completeness') }}
+              <span class="citations-tip" tabindex="0" data-tip="How complete the FAIR3R metadata of this dataset is: the weighted share of the fields that apply (required fields count double), CKAN basics included. Conditional fields that are hidden are ignored."><i class="fa fa-info-circle"></i></span>
+            </th>
             <td>
               <div class="progress" style="margin-bottom: 4px; max-width: 320px;">
                 <div class="progress-bar {{ bar_class }}" role="progressbar" style="width: {{ completeness.score }}%; min-width: 2.5em;" aria-valuenow="{{ completeness.score }}" aria-valuemin="0" aria-valuemax="100">{{ completeness.score }} %</div>
