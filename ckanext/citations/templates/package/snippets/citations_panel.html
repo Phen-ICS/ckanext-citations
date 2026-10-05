@@ -10,6 +10,9 @@
     transition: opacity 0.1s;
   }
   .citations-tip:hover::after, .citations-tip:focus::after { opacity: 1; visibility: visible; }
+  .citations-bar-red { background-color: #d9534f; }
+  .citations-bar-orange { background-color: #f0ad4e; color: #333; }
+  .citations-bar-green { background-color: #5cb85c; }
 </style>
 {% set stats = h.citations_get_stats(pkg_dict.id, pkg_dict) %}
 <section class="module" id="citations-panel">
@@ -20,7 +23,7 @@
       <tbody>
         {% set completeness = h.citations_completeness(pkg_dict) %}
         {% if completeness %}
-          {% set bar_class = {"red": "progress-bar-danger", "orange": "progress-bar-warning", "green": "progress-bar-success"}[completeness.band] %}
+          {% set bar_class = {"red": "citations-bar-red", "orange": "citations-bar-orange", "green": "citations-bar-green"}[completeness.band] %}
           <tr>
             <th scope="row">{{ _('Completeness') }}</th>
             <td>
