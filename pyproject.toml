@@ -1,6 +1,6 @@
 [project]
 name = "ckanext-citations"
-version = "0.1.6"
+version = "0.1.7"
 description = "Citation tracking (cited-by via OpenAlex/DataCite Event Data), dataset disruption index and per-researcher S-index, displayed on the dataset page."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -36,6 +36,7 @@ exclude = ["docs"]
 [tool.setuptools.package-data]
 "ckanext.citations.templates" = ["*", "**/*"]
 "ckanext.citations.migration" = ["*", "**/*"]
+"ckanext.citations.i18n" = ["*.pot", "**/*.po", "**/*.mo"]
 "ckanext.citations.tests" = ["test.ini"]
 
 [tool.ruff.format]

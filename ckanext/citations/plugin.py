@@ -1,11 +1,12 @@
 from ckan import plugins
+from ckan.lib.plugins import DefaultTranslation
 from ckan.plugins import toolkit
 
 from ckanext.citations import cli, model
 from ckanext.citations.lib.helpers import citations_completeness, citations_get_stats
 
 
-class CitationsPlugin(plugins.SingletonPlugin):
+class CitationsPlugin(plugins.SingletonPlugin, DefaultTranslation):
     """Citation tracking (cited-by via OpenAlex/DataCite Event Data),
     dataset disruption index and per-researcher S-index, displayed on the
     dataset page. See README for the architecture (dedicated tables, no
@@ -16,6 +17,7 @@ class CitationsPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.ITemplateHelpers)
     plugins.implements(plugins.IClick)
+    plugins.implements(plugins.ITranslation)
 
     # IConfigurer
 

@@ -1,0 +1,130 @@
+# French translations for ckanext-citations.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the ckanext-citations
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ckanext-citations 0.1.6\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-10-05 15:53+0000\n"
+"PO-Revision-Date: 2026-10-05 15:53+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: fr <LL@li.org>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:20
+msgid "FAIR & Impact"
+msgstr "FAIR & Impact"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:29
+msgid "Completeness"
+msgstr "Complétude"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:30
+msgid ""
+"How complete the FAIR3R metadata of this dataset is: the weighted share of "
+"the fields that apply (required fields count double), CKAN basics included. "
+"Conditional fields that are hidden are ignored."
+msgstr ""
+"Niveau de complétude des métadonnées FAIR3R de ce dataset : part pondérée "
+"des champs applicables (les champs obligatoires comptent double), en "
+"incluant les champs de base de CKAN. Les champs conditionnels masqués sont "
+"ignorés."
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:38
+msgid "Missing fields"
+msgstr "Champs manquants"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:50
+msgid "Citations"
+msgstr "Citations"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:55
+msgid "last checked"
+msgstr "dernière vérification"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:62
+msgid "Disruption index"
+msgstr "Indice de disruption"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:63
+msgid ""
+"Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works "
+"citing this dataset tend to replace it; close to -1 means they build on it "
+"together with its own references. Uses the dataset References/Cites related "
+"identifiers when present."
+msgstr ""
+"Wu, Wang & Evans (2019). Entre -1 et +1 : proche de +1, les œuvres citant ce"
+" dataset tendent à le remplacer ; proche de -1, elles s'appuient aussi sur "
+"ses références. Utilise les identifiants liés References/Cites du dataset "
+"quand ils existent."
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:69
+msgid "not enough data yet"
+msgstr "pas assez de données pour l'instant"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:76
+#: ckanext/citations/templates/package/snippets/citations_panel.html:87
+msgid "S-index"
+msgstr "S-index"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:77
+msgid ""
+"Number of distinct researchers (identified by ORCID) who have cited at least"
+" one of this author FAIR3R datasets. Shown for the highest co-author with an"
+" ORCID."
+msgstr ""
+"Nombre de chercheurs distincts (identifiés par ORCID) ayant cité au moins un"
+" des datasets FAIR3R de cet auteur. Affiché pour le co-auteur ayant le plus "
+"haut score, parmi ceux qui ont un ORCID."
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:82
+msgid "highest among co-authors"
+msgstr "le plus élevé parmi les co-auteurs"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:84
+msgid "All co-authors"
+msgstr "Tous les co-auteurs"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:99
+msgid ""
+"Not checked yet: citations are tracked once the dataset has a published DOI."
+msgstr ""
+"Pas encore vérifié : les citations sont suivies une fois le dataset publié "
+"avec un DOI."
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:103
+msgid "Citing works"
+msgstr "Œuvres citantes"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:107
+msgid "Title"
+msgstr "Titre"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:108
+msgid "Authors"
+msgstr "Auteurs"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:109
+msgid "Year"
+msgstr "Année"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:110
+msgid "Venue"
+msgstr "Revue"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:111
+msgid "DOI"
+msgstr "DOI"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:134
+#, python-format
+msgid "Show all %(count)s citing works"
+msgstr "Afficher les %(count)s œuvres citantes"
