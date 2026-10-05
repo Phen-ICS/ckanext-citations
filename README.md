@@ -85,6 +85,12 @@ job, same pattern as `fair3r update-schema`.
 
 ## Tests
 
+Two `test.ini` files, same convention as the other FAIR3R extensions:
+
+- `test.ini` at the repo root: Docker DEV (`/srv/app/src/ckan/test-core.ini`).
+- `ckanext/citations/tests/test.ini`: shipped with the package, used by
+  `deploy/ckanext_test.py` on integration/validation (`/usr/lib/ckan/default/...`).
+
 ```shell
-docker exec -u ckan -it ckan-app pytest --ckan-ini=/plugins/ckanext-citations/ckanext/citations/tests/test.ini /plugins/ckanext-citations/ckanext/citations/tests
+docker exec -u ckan -it ckan-app pytest --ckan-ini=/plugins/ckanext-citations/test.ini /plugins/ckanext-citations/ckanext/citations/tests
 ```
