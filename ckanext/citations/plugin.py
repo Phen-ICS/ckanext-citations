@@ -2,7 +2,7 @@ from ckan import plugins
 from ckan.plugins import toolkit
 
 from ckanext.citations import cli, model
-from ckanext.citations.lib.helpers import citations_get_stats
+from ckanext.citations.lib.helpers import citations_completeness, citations_get_stats
 
 
 class CitationsPlugin(plugins.SingletonPlugin):
@@ -28,7 +28,10 @@ class CitationsPlugin(plugins.SingletonPlugin):
     # ITemplateHelpers
 
     def get_helpers(self):
-        return {'citations_get_stats': citations_get_stats}
+        return {
+            'citations_get_stats': citations_get_stats,
+            'citations_completeness': citations_completeness,
+        }
 
     # IClick
 

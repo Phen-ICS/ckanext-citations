@@ -12,17 +12,36 @@
   .citations-tip:hover::after, .citations-tip:focus::after { opacity: 1; visibility: visible; }
 </style>
 {% set stats = h.citations_get_stats(pkg_dict.id, pkg_dict) %}
-{% if stats %}
 <section class="module" id="citations-panel">
   <div class="module-content">
     <h2>{{ _('FAIR & Impact') }}</h2>
 
     <table class="table table-condensed">
       <tbody>
+        {% set completeness = h.citations_completeness(pkg_dict) %}
+        {% if completeness %}
+          {% set label_class = {"red": "label-danger", "orange": "label-warning", "green": "label-success"}[completeness.band] %}
+          <tr>
+            <th scope="row">{{ _('Completeness') }}</th>
+            <td>
+              <span class="label {{ label_class }}">{{ completeness.score }} %</span>
+              {% if completeness.missing %}
+                <details>
+                  <summary>{{ _('Missing fields') }} ({{ completeness.missing|length }})</summary>
+                  <ul class="list-unstyled">
+                    {% for section, label, required in completeness.missing[:30] %}
+                      <li>{{ section }} — {{ label }}{% if required %} <strong>*</strong>{% endif %}</li>
+                    {% endfor %}
+                  </ul>
+                </details>
+              {% endif %}
+            </td>
+          </tr>
+        {% endif %}
         <tr>
           <th scope="row">{{ _('Citations') }}</th>
           <td>
-            {{ stats.citation_count }}
+            {{ stats.citation_count if stats.checked else "—" }}
             {% if stats.last_checked %}
               <small class="text-muted">
                 ({{ _('last checked') }} {{ h.render_datetime(stats.last_checked) }})
@@ -67,6 +86,10 @@
         {% endif %}
       </tbody>
     </table>
+
+    {% if not stats.checked %}
+      <p class="text-muted">{{ _('Not checked yet: citations are tracked once the dataset has a published DOI.') }}</p>
+    {% endif %}
 
     {% if stats.citing_works %}
       <h3>{{ _('Citing works') }}</h3>
@@ -125,4 +148,3 @@
     {% endif %}
   </div>
 </section>
-{% endif %}
