@@ -18,16 +18,16 @@
           </td>
         </tr>
         <tr>
-          <th scope="row">
-            {{ _('Disruption index') }}
-            <i class="fa fa-info-circle" title="{{ _('Wu, Wang & Evans (2019): whether works citing this dataset tend to supersede it (closer to +1) or build on it alongside its own references (closer to -1).') }}"></i>
-          </th>
+          <th scope="row">{{ _('Disruption index') }}</th>
           <td>
             {% if stats.disruption_index is not none %}
               {{ '%.2f' % stats.disruption_index }}
             {% else %}
               <span class="text-muted">{{ _('not enough data yet') }}</span>
             {% endif %}
+            <p class="help-block small">
+              {{ _('Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works citing this dataset tend to replace it; close to -1 means they build on it together with its own references. Uses the dataset\'s References/Cites related identifiers when present.') }}
+            </p>
           </td>
         </tr>
         {% if stats.coauthors %}
@@ -46,6 +46,9 @@
                   </ul>
                 </details>
               {% endif %}
+              <p class="help-block small">
+                {{ _('Number of distinct researchers (identified by ORCID) who have cited at least one of this author\'s FAIR3R datasets. Shown for the highest co-author with an ORCID.') }}
+              </p>
             </td>
           </tr>
         {% endif %}
