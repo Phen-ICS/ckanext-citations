@@ -20,11 +20,13 @@
       <tbody>
         {% set completeness = h.citations_completeness(pkg_dict) %}
         {% if completeness %}
-          {% set label_class = {"red": "label-danger", "orange": "label-warning", "green": "label-success"}[completeness.band] %}
+          {% set bar_class = {"red": "progress-bar-danger", "orange": "progress-bar-warning", "green": "progress-bar-success"}[completeness.band] %}
           <tr>
             <th scope="row">{{ _('Completeness') }}</th>
             <td>
-              <span class="label {{ label_class }}">{{ completeness.score }} %</span>
+              <div class="progress" style="margin-bottom: 4px; max-width: 320px;">
+                <div class="progress-bar {{ bar_class }}" role="progressbar" style="width: {{ completeness.score }}%; min-width: 2.5em;" aria-valuenow="{{ completeness.score }}" aria-valuemin="0" aria-valuemax="100">{{ completeness.score }} %</div>
+              </div>
               {% if completeness.missing %}
                 <details>
                   <summary>{{ _('Missing fields') }} ({{ completeness.missing|length }})</summary>
