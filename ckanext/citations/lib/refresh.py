@@ -85,58 +85,61 @@ def refresh_dataset(package_id):
 
     stats.openalex_work_id = work_id
 
-    focal = openalex_client.get_work(work_id, contact_email)
-    max_references = _max_references()
-    reference_work_ids = []
-    for ref_id in (focal or {}).get('referenced_work_ids') or []:
-        if ref_id and ref_id not in reference_work_ids:
-            reference_work_ids.append(ref_id)
-
-    for ref_doi in get_reference_dois(pkg):
-        ref_work_id = openalex_client.resolve_doi_to_work_id(ref_doi, contact_email)
-        if ref_work_id and ref_work_id not in reference_work_ids:
-            reference_work_ids.append(ref_work_id)
-        time.sleep(pause)
-
-    reference_work_ids = reference_work_ids[:max_references]
-
     citing_works = list(
         openalex_client.iter_citing_works(work_id, contact_email, pause_seconds=pause)
     )
 
+    now = datetime.now(timezone.utc)
     n_fresh = 0
     n_building = 0
-    cited_focal_ids = set()
-    now = datetime.now(timezone.utc)
-
-    existing_works = {
-        row.openalex_work_id: row
-        for row in Session.query(CitingWork).filter(CitingWork.package_id == package_id)
-    }
-    for cw in citing_works:
-        cls = classify_citing_work(cw['referenced_work_ids'], reference_work_ids)
-        if cls == 'building':
-            n_building += 1
-        else:
-            n_fresh += 1
-        if cw['openalex_work_id']:
-            cited_focal_ids.add(cw['openalex_work_id'])
-        _upsert_citing_work(package_id, cw, cls, now, existing_works)
-
     n_reference_only = 0
-    if reference_work_ids:
-        reference_only_ids = set()
-        for ref_id in reference_work_ids:
-            for w in openalex_client.iter_citing_works(
-                ref_id,
-                contact_email,
-                pause_seconds=pause,
-                max_items=_max_reference_citers(),
-            ):
-                wid = w['openalex_work_id']
-                if wid and wid not in cited_focal_ids:
-                    reference_only_ids.add(wid)
-        n_reference_only = len(reference_only_ids)
+
+    if citing_works:
+        focal = openalex_client.get_work(work_id, contact_email)
+        max_references = _max_references()
+        reference_work_ids = []
+        for ref_id in (focal or {}).get('referenced_work_ids') or []:
+            if ref_id and ref_id not in reference_work_ids:
+                reference_work_ids.append(ref_id)
+
+        for ref_doi in get_reference_dois(pkg):
+            ref_work_id = openalex_client.resolve_doi_to_work_id(ref_doi, contact_email)
+            if ref_work_id and ref_work_id not in reference_work_ids:
+                reference_work_ids.append(ref_work_id)
+            time.sleep(pause)
+
+        reference_work_ids = reference_work_ids[:max_references]
+
+        cited_focal_ids = set()
+        existing_works = {
+            row.openalex_work_id: row
+            for row in Session.query(CitingWork).filter(
+                CitingWork.package_id == package_id
+            )
+        }
+        for cw in citing_works:
+            cls = classify_citing_work(cw['referenced_work_ids'], reference_work_ids)
+            if cls == 'building':
+                n_building += 1
+            else:
+                n_fresh += 1
+            if cw['openalex_work_id']:
+                cited_focal_ids.add(cw['openalex_work_id'])
+            _upsert_citing_work(package_id, cw, cls, now, existing_works)
+
+        if reference_work_ids:
+            reference_only_ids = set()
+            for ref_id in reference_work_ids:
+                for w in openalex_client.iter_citing_works(
+                    ref_id,
+                    contact_email,
+                    pause_seconds=pause,
+                    max_items=_max_reference_citers(),
+                ):
+                    wid = w['openalex_work_id']
+                    if wid and wid not in cited_focal_ids:
+                        reference_only_ids.add(wid)
+            n_reference_only = len(reference_only_ids)
 
     stats.citation_count_current = len(citing_works)
     stats.citation_count_max = max(

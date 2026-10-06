@@ -3,7 +3,7 @@ from ckan.model import Session
 from ckan.tests import factories
 
 from ckanext.citations.lib import refresh
-from ckanext.citations.model import CitingWork
+from ckanext.citations.model import CitationStats, CitingWork
 
 pytestmark = pytest.mark.usefixtures('citations_tables')
 
@@ -73,3 +73,29 @@ def test_openalex_work_id_is_resolved_on_every_refresh(monkeypatch):
     refresh.refresh_dataset(dataset['id'])
 
     assert len(calls) == 2
+
+
+@pytest.mark.usefixtures('clean_db')
+def test_no_citing_work_skips_references_and_focal_lookup(monkeypatch):
+    dataset = factories.Dataset()
+    monkeypatch.setattr(refresh, 'get_published_doi', lambda pkg: '10.1234/fake')
+    monkeypatch.setattr(
+        refresh.openalex_client, 'resolve_doi_to_work_id', lambda doi, email=None: 'W1'
+    )
+    monkeypatch.setattr(
+        refresh.openalex_client,
+        'iter_citing_works',
+        lambda work_id, email=None, pause_seconds=0.1, max_items=None: iter([]),
+    )
+
+    def fail(*args, **kwargs):
+        raise AssertionError('must not be called without citing works')
+
+    monkeypatch.setattr(refresh.openalex_client, 'get_work', fail)
+
+    refresh.refresh_dataset(dataset['id'])
+
+    stats = Session.get(CitationStats, dataset['id'])
+    assert stats.citation_count_current == 0
+    assert stats.disruption_index is None
+    assert stats.last_checked is not None
