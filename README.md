@@ -9,6 +9,11 @@ fallback), a per-dataset disruption index, and a per-researcher S-index
 [s-index.science](https://s-index.science/)), displayed on the dataset
 page.
 
+## User guide
+
+What the FAIR & Impact panel shows, and how to read it: see
+[docs/user-guide.md](docs/user-guide.md).
+
 ## v1 scope
 
 This first iteration deliberately does **not** implement the 17
