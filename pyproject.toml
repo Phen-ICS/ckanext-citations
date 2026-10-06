@@ -1,6 +1,6 @@
 [project]
 name = "ckanext-citations"
-version = "0.1.7"
+version = "0.1.8"
 description = "Citation tracking (cited-by via OpenAlex/DataCite Event Data), dataset disruption index and per-researcher S-index, displayed on the dataset page."
 readme = "README.md"
 requires-python = ">=3.10"
