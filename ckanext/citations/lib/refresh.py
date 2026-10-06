@@ -109,6 +109,10 @@ def refresh_dataset(package_id):
     cited_focal_ids = set()
     now = datetime.now(timezone.utc)
 
+    existing_works = {
+        row.openalex_work_id: row
+        for row in Session.query(CitingWork).filter(CitingWork.package_id == package_id)
+    }
     for cw in citing_works:
         cls = classify_citing_work(cw['referenced_work_ids'], reference_work_ids)
         if cls == 'building':
@@ -117,7 +121,7 @@ def refresh_dataset(package_id):
             n_fresh += 1
         if cw['openalex_work_id']:
             cited_focal_ids.add(cw['openalex_work_id'])
-        _upsert_citing_work(package_id, cw, cls, now)
+        _upsert_citing_work(package_id, cw, cls, now, existing_works)
 
     n_reference_only = 0
     if reference_work_ids:
@@ -155,8 +159,25 @@ def refresh_dataset(package_id):
             recorded_at=now,
         )
     )
+    _prune_score_history(package_id)
 
     Session.commit()
+
+
+HISTORY_KEEP = 100
+
+
+def _prune_score_history(package_id):
+    keep = (
+        Session.query(ScoreHistory.id)
+        .filter(ScoreHistory.package_id == package_id)
+        .order_by(ScoreHistory.recorded_at.desc())
+        .limit(HISTORY_KEEP)
+    )
+    Session.query(ScoreHistory).filter(
+        ScoreHistory.package_id == package_id,
+        ScoreHistory.id.notin_(keep.subquery().select()),
+    ).delete(synchronize_session=False)
 
 
 def _refresh_via_datacite_fallback(stats, doi):
@@ -197,17 +218,10 @@ def _max_reference_citers():
         return DEFAULT_MAX_REFERENCE_CITERS
 
 
-def _upsert_citing_work(package_id, cw, disruption_class, now):
+def _upsert_citing_work(package_id, cw, disruption_class, now, existing_works):
     # Keyed on the OpenAlex id: a citing work without a DOI would otherwise
     # match any other DOI-less row (SQLAlchemy turns `== None` into IS NULL).
-    existing = (
-        Session.query(CitingWork)
-        .filter(
-            CitingWork.package_id == package_id,
-            CitingWork.openalex_work_id == cw.get('openalex_work_id'),
-        )
-        .first()
-    )
+    existing = existing_works.get(cw.get('openalex_work_id'))
     if existing:
         existing.title = cw.get('title')
         existing.authors = cw.get('authors')
@@ -216,21 +230,21 @@ def _upsert_citing_work(package_id, cw, disruption_class, now):
         existing.disruption_class = disruption_class
         existing.openalex_work_id = cw.get('openalex_work_id')
         return
-    Session.add(
-        CitingWork(
-            id=str(uuid.uuid4()),
-            package_id=package_id,
-            citing_doi=cw.get('doi'),
-            openalex_work_id=cw.get('openalex_work_id'),
-            title=cw.get('title'),
-            authors=cw.get('authors'),
-            year=cw.get('year'),
-            venue=cw.get('venue'),
-            source='openalex',
-            disruption_class=disruption_class,
-            discovered_at=now,
-        )
+    row = CitingWork(
+        id=str(uuid.uuid4()),
+        package_id=package_id,
+        citing_doi=cw.get('doi'),
+        openalex_work_id=cw.get('openalex_work_id'),
+        title=cw.get('title'),
+        authors=cw.get('authors'),
+        year=cw.get('year'),
+        venue=cw.get('venue'),
+        source='openalex',
+        disruption_class=disruption_class,
+        discovered_at=now,
     )
+    Session.add(row)
+    existing_works[cw.get('openalex_work_id')] = row
 
 
 def _update_sindex_contributions(pkg, citing_works, now):
@@ -250,17 +264,16 @@ def _update_sindex_contributions(pkg, citing_works, now):
     citing_people = list(unique_people.values())
 
     for orcid, author_name in focal_authors:
-        for key, key_type, display_name in citing_people:
-            existing = (
-                Session.query(CitingResearcher)
-                .filter(
-                    CitingResearcher.author_orcid == orcid,
-                    CitingResearcher.citing_person_key == key,
-                )
-                .first()
+        known_keys = {
+            row.citing_person_key
+            for row in Session.query(CitingResearcher.citing_person_key).filter(
+                CitingResearcher.author_orcid == orcid
             )
-            if existing:
+        }
+        for key, key_type, display_name in citing_people:
+            if key in known_keys:
                 continue
+            known_keys.add(key)
             Session.add(
                 CitingResearcher(
                     id=str(uuid.uuid4()),

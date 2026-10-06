@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 import click
 from ckan.model import Package, Session
+from sqlalchemy import inspect, text
 
 log = logging.getLogger(__name__)
 
@@ -80,10 +81,22 @@ def _packages_due_for_refresh(min_age_days):
         )
     }
 
-    all_active_ids = [
-        row.id
-        for row in Session.query(Package.id).filter(
-            Package.state == 'active', Package.type == 'dataset'
-        )
-    ]
+    if inspect(Session.bind).has_table('doi'):
+        all_active_ids = [
+            row.package_id
+            for row in Session.execute(
+                text(
+                    'SELECT d.package_id FROM doi d JOIN package p ON p.id = d.package_id '
+                    "WHERE p.state = 'active' AND p.type = 'dataset' "
+                    'AND d.published IS NOT NULL'
+                )
+            )
+        ]
+    else:
+        all_active_ids = [
+            row.id
+            for row in Session.query(Package.id).filter(
+                Package.state == 'active', Package.type == 'dataset'
+            )
+        ]
     return [pid for pid in all_active_ids if pid not in already_checked_recently]
