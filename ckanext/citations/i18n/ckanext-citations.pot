@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-citations 0.1.15\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-06 14:49+0000\n"
+"POT-Creation-Date: 2026-10-06 14:51+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -115,5 +115,9 @@ msgstr ""
 #: ckanext/citations/templates/package/snippets/citations_panel.html:134
 #, python-format
 msgid "Show all %(count)s citing works"
+msgstr ""
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:158
+msgid "User guide"
 msgstr ""
 
