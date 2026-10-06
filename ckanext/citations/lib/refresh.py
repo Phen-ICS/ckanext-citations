@@ -34,6 +34,9 @@ from ckanext.citations.model import (
 
 log = logging.getLogger(__name__)
 
+DEFAULT_MAX_REFERENCES = 10
+DEFAULT_MAX_REFERENCE_CITERS = 200
+
 
 def _contact_email():
     return toolkit.config.get('ckanext.citations.contact_email') or None
@@ -71,9 +74,9 @@ def refresh_dataset(package_id):
         )
         Session.add(stats)
 
-    work_id = stats.openalex_work_id or openalex_client.resolve_doi_to_work_id(
-        doi, contact_email
-    )
+    # Resolved on every refresh: a cached id could point at the wrong record
+    # forever, and one lookup per refresh is cheap next to the citing works.
+    work_id = openalex_client.resolve_doi_to_work_id(doi, contact_email)
 
     if not work_id:
         _refresh_via_datacite_fallback(stats, doi)
@@ -82,45 +85,61 @@ def refresh_dataset(package_id):
 
     stats.openalex_work_id = work_id
 
-    focal = openalex_client.get_work(work_id, contact_email)
-    reference_work_ids = set((focal or {}).get('referenced_work_ids') or [])
-
-    for ref_doi in get_reference_dois(pkg):
-        ref_work_id = openalex_client.resolve_doi_to_work_id(ref_doi, contact_email)
-        if ref_work_id:
-            reference_work_ids.add(ref_work_id)
-        time.sleep(pause)
-
     citing_works = list(
         openalex_client.iter_citing_works(work_id, contact_email, pause_seconds=pause)
     )
 
+    now = datetime.now(timezone.utc)
     n_fresh = 0
     n_building = 0
-    cited_focal_ids = set()
-    now = datetime.now(timezone.utc)
-
-    for cw in citing_works:
-        cls = classify_citing_work(cw['referenced_work_ids'], reference_work_ids)
-        if cls == 'building':
-            n_building += 1
-        else:
-            n_fresh += 1
-        if cw['openalex_work_id']:
-            cited_focal_ids.add(cw['openalex_work_id'])
-        _upsert_citing_work(package_id, cw, cls, now)
-
     n_reference_only = 0
-    if reference_work_ids:
-        reference_only_ids = set()
-        for ref_id in reference_work_ids:
-            for w in openalex_client.iter_citing_works(
-                ref_id, contact_email, pause_seconds=pause
-            ):
-                wid = w['openalex_work_id']
-                if wid and wid not in cited_focal_ids:
-                    reference_only_ids.add(wid)
-        n_reference_only = len(reference_only_ids)
+
+    if citing_works:
+        focal = openalex_client.get_work(work_id, contact_email)
+        max_references = _max_references()
+        reference_work_ids = []
+        for ref_id in (focal or {}).get('referenced_work_ids') or []:
+            if ref_id and ref_id not in reference_work_ids:
+                reference_work_ids.append(ref_id)
+
+        for ref_doi in get_reference_dois(pkg):
+            ref_work_id = openalex_client.resolve_doi_to_work_id(ref_doi, contact_email)
+            if ref_work_id and ref_work_id not in reference_work_ids:
+                reference_work_ids.append(ref_work_id)
+            time.sleep(pause)
+
+        reference_work_ids = reference_work_ids[:max_references]
+
+        cited_focal_ids = set()
+        existing_works = {
+            row.openalex_work_id: row
+            for row in Session.query(CitingWork).filter(
+                CitingWork.package_id == package_id
+            )
+        }
+        for cw in citing_works:
+            cls = classify_citing_work(cw['referenced_work_ids'], reference_work_ids)
+            if cls == 'building':
+                n_building += 1
+            else:
+                n_fresh += 1
+            if cw['openalex_work_id']:
+                cited_focal_ids.add(cw['openalex_work_id'])
+            _upsert_citing_work(package_id, cw, cls, now, existing_works)
+
+        if reference_work_ids:
+            reference_only_ids = set()
+            for ref_id in reference_work_ids:
+                for w in openalex_client.iter_citing_works(
+                    ref_id,
+                    contact_email,
+                    pause_seconds=pause,
+                    max_items=_max_reference_citers(),
+                ):
+                    wid = w['openalex_work_id']
+                    if wid and wid not in cited_focal_ids:
+                        reference_only_ids.add(wid)
+            n_reference_only = len(reference_only_ids)
 
     stats.citation_count_current = len(citing_works)
     stats.citation_count_max = max(
@@ -143,8 +162,25 @@ def refresh_dataset(package_id):
             recorded_at=now,
         )
     )
+    _prune_score_history(package_id)
 
     Session.commit()
+
+
+HISTORY_KEEP = 100
+
+
+def _prune_score_history(package_id):
+    keep = (
+        Session.query(ScoreHistory.id)
+        .filter(ScoreHistory.package_id == package_id)
+        .order_by(ScoreHistory.recorded_at.desc())
+        .limit(HISTORY_KEEP)
+    )
+    Session.query(ScoreHistory).filter(
+        ScoreHistory.package_id == package_id,
+        ScoreHistory.id.notin_(keep.subquery().select()),
+    ).delete(synchronize_session=False)
 
 
 def _refresh_via_datacite_fallback(stats, doi):
@@ -163,14 +199,32 @@ def _refresh_via_datacite_fallback(stats, doi):
     stats.last_checked = datetime.now(timezone.utc)
 
 
-def _upsert_citing_work(package_id, cw, disruption_class, now):
-    existing = (
-        Session.query(CitingWork)
-        .filter(
-            CitingWork.package_id == package_id, CitingWork.citing_doi == cw.get('doi')
+def _max_references():
+    try:
+        return int(
+            toolkit.config.get(
+                'ckanext.citations.max_references', DEFAULT_MAX_REFERENCES
+            )
         )
-        .first()
-    )
+    except (TypeError, ValueError):
+        return DEFAULT_MAX_REFERENCES
+
+
+def _max_reference_citers():
+    try:
+        return int(
+            toolkit.config.get(
+                'ckanext.citations.max_reference_citers', DEFAULT_MAX_REFERENCE_CITERS
+            )
+        )
+    except (TypeError, ValueError):
+        return DEFAULT_MAX_REFERENCE_CITERS
+
+
+def _upsert_citing_work(package_id, cw, disruption_class, now, existing_works):
+    # Keyed on the OpenAlex id: a citing work without a DOI would otherwise
+    # match any other DOI-less row (SQLAlchemy turns `== None` into IS NULL).
+    existing = existing_works.get(cw.get('openalex_work_id'))
     if existing:
         existing.title = cw.get('title')
         existing.authors = cw.get('authors')
@@ -179,21 +233,21 @@ def _upsert_citing_work(package_id, cw, disruption_class, now):
         existing.disruption_class = disruption_class
         existing.openalex_work_id = cw.get('openalex_work_id')
         return
-    Session.add(
-        CitingWork(
-            id=str(uuid.uuid4()),
-            package_id=package_id,
-            citing_doi=cw.get('doi'),
-            openalex_work_id=cw.get('openalex_work_id'),
-            title=cw.get('title'),
-            authors=cw.get('authors'),
-            year=cw.get('year'),
-            venue=cw.get('venue'),
-            source='openalex',
-            disruption_class=disruption_class,
-            discovered_at=now,
-        )
+    row = CitingWork(
+        id=str(uuid.uuid4()),
+        package_id=package_id,
+        citing_doi=cw.get('doi'),
+        openalex_work_id=cw.get('openalex_work_id'),
+        title=cw.get('title'),
+        authors=cw.get('authors'),
+        year=cw.get('year'),
+        venue=cw.get('venue'),
+        source='openalex',
+        disruption_class=disruption_class,
+        discovered_at=now,
     )
+    Session.add(row)
+    existing_works[cw.get('openalex_work_id')] = row
 
 
 def _update_sindex_contributions(pkg, citing_works, now):
@@ -204,25 +258,25 @@ def _update_sindex_contributions(pkg, citing_works, now):
     if not focal_authors:
         return
 
-    citing_people = []
+    unique_people = {}
     for cw in citing_works:
         for author in cw.get('authors') or []:
             key, key_type = citing_person_key(author)
-            if key:
-                citing_people.append((key, key_type, author.get('name')))
+            if key and key not in unique_people:
+                unique_people[key] = (key, key_type, author.get('name'))
+    citing_people = list(unique_people.values())
 
     for orcid, author_name in focal_authors:
-        for key, key_type, display_name in citing_people:
-            existing = (
-                Session.query(CitingResearcher)
-                .filter(
-                    CitingResearcher.author_orcid == orcid,
-                    CitingResearcher.citing_person_key == key,
-                )
-                .first()
+        known_keys = {
+            row.citing_person_key
+            for row in Session.query(CitingResearcher.citing_person_key).filter(
+                CitingResearcher.author_orcid == orcid
             )
-            if existing:
+        }
+        for key, key_type, display_name in citing_people:
+            if key in known_keys:
                 continue
+            known_keys.add(key)
             Session.add(
                 CitingResearcher(
                     id=str(uuid.uuid4()),
