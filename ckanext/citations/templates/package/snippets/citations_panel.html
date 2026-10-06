@@ -17,7 +17,10 @@
 {% set stats = h.citations_get_stats(pkg_dict.id, pkg_dict) %}
 <section class="module" id="citations-panel">
   <div class="module-content">
-    <h2>{{ _('FAIR & Impact') }}</h2>
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <h2 style="margin-top: 0;">{{ _('FAIR & Impact') }}</h2>
+      <a href="https://github.com/Phen-ICS/ckanext-citations/blob/main/docs/user-guide.md" target="_blank" rel="noopener" class="small"><i class="fa fa-book"></i> {{ _('User guide') }}</a>
+    </div>
 
     <table class="table table-condensed">
       <tbody>
@@ -154,8 +157,5 @@
         </details>
       {% endif %}
     {% endif %}
-    <p class="small">
-      <a href="https://github.com/Phen-ICS/ckanext-citations/blob/main/docs/user-guide.md" target="_blank" rel="noopener">{{ _('User guide') }}</a>
-    </p>
   </div>
 </section>
