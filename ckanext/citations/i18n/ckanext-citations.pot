@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: ckanext-citations 0.1.6\n"
+"Project-Id-Version: ckanext-citations 0.1.15\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-05 15:53+0000\n"
+"POT-Creation-Date: 2026-10-06 14:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -54,7 +54,9 @@ msgid ""
 "Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works "
 "citing this dataset tend to replace it; close to -1 means they build on it "
 "together with its own references. Uses the dataset References/Cites related "
-"identifiers when present."
+"identifiers when present. To stay fast, only a limited number of references "
+"and citing works are used: when references are widely cited, the index stays "
+"close to 0, so use it to compare datasets, not as an absolute value."
 msgstr ""
 
 #: ckanext/citations/templates/package/snippets/citations_panel.html:69
@@ -68,9 +70,10 @@ msgstr ""
 
 #: ckanext/citations/templates/package/snippets/citations_panel.html:77
 msgid ""
-"Number of distinct researchers (identified by ORCID) who have cited at least "
-"one of this author FAIR3R datasets. Shown for the highest co-author with an "
-"ORCID."
+"Distinct researchers (identified by ORCID, or by name when no ORCID) that the"
+" FAIR3R datasets of this author have reached since tracking started. "
+"Cumulative: a researcher is never removed, even if a citation later "
+"disappears. Shown for the highest co-author with an ORCID."
 msgstr ""
 
 #: ckanext/citations/templates/package/snippets/citations_panel.html:82

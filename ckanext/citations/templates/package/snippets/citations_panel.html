@@ -60,7 +60,7 @@
         <tr>
           <th scope="row">
             {{ _('Disruption index') }}
-            <span class="citations-tip" tabindex="0" data-tip="{{ _('Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works citing this dataset tend to replace it; close to -1 means they build on it together with its own references. Uses the dataset References/Cites related identifiers when present.') }}"><i class="fa fa-info-circle"></i></span>
+            <span class="citations-tip" tabindex="0" data-tip="{{ _('Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works citing this dataset tend to replace it; close to -1 means they build on it together with its own references. Uses the dataset References/Cites related identifiers when present. To stay fast, only a limited number of references and citing works are used: when references are widely cited, the index stays close to 0, so use it to compare datasets, not as an absolute value.') }}"><i class="fa fa-info-circle"></i></span>
           </th>
           <td>
             {% if stats.disruption_index is not none %}
