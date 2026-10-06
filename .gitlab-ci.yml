@@ -33,8 +33,8 @@ version:check:
     - git fetch origin main
   script:
     - |
-      LOCAL_VER=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
-      REMOTE_VER=$(git show origin/main:pyproject.toml | python -c "import sys,tomllib; print(tomllib.loads(sys.stdin.read())['project']['version'])")
+      LOCAL_VER=$(grep -m1 '^version' pyproject.toml | cut -d'"' -f2)
+      REMOTE_VER=$(git show origin/main:pyproject.toml | grep -m1 '^version' | cut -d'"' -f2)
       echo "Local version: $LOCAL_VER, Remote (main) version: $REMOTE_VER"
       if [ "$LOCAL_VER" = "$REMOTE_VER" ]; then
         echo "Error: the version must be incremented before merging (current: $LOCAL_VER)";
