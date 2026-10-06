@@ -34,6 +34,9 @@ from ckanext.citations.model import (
 
 log = logging.getLogger(__name__)
 
+DEFAULT_MAX_REFERENCES = 10
+DEFAULT_MAX_REFERENCE_CITERS = 200
+
 
 def _contact_email():
     return toolkit.config.get('ckanext.citations.contact_email') or None
@@ -83,13 +86,19 @@ def refresh_dataset(package_id):
     stats.openalex_work_id = work_id
 
     focal = openalex_client.get_work(work_id, contact_email)
-    reference_work_ids = set((focal or {}).get('referenced_work_ids') or [])
+    max_references = _max_references()
+    reference_work_ids = []
+    for ref_id in (focal or {}).get('referenced_work_ids') or []:
+        if ref_id and ref_id not in reference_work_ids:
+            reference_work_ids.append(ref_id)
 
     for ref_doi in get_reference_dois(pkg):
         ref_work_id = openalex_client.resolve_doi_to_work_id(ref_doi, contact_email)
-        if ref_work_id:
-            reference_work_ids.add(ref_work_id)
+        if ref_work_id and ref_work_id not in reference_work_ids:
+            reference_work_ids.append(ref_work_id)
         time.sleep(pause)
+
+    reference_work_ids = reference_work_ids[:max_references]
 
     citing_works = list(
         openalex_client.iter_citing_works(work_id, contact_email, pause_seconds=pause)
@@ -115,7 +124,10 @@ def refresh_dataset(package_id):
         reference_only_ids = set()
         for ref_id in reference_work_ids:
             for w in openalex_client.iter_citing_works(
-                ref_id, contact_email, pause_seconds=pause
+                ref_id,
+                contact_email,
+                pause_seconds=pause,
+                max_items=_max_reference_citers(),
             ):
                 wid = w['openalex_work_id']
                 if wid and wid not in cited_focal_ids:
@@ -161,6 +173,28 @@ def _refresh_via_datacite_fallback(stats, doi):
         stats.citation_count_max, stats.citation_count_current
     )
     stats.last_checked = datetime.now(timezone.utc)
+
+
+def _max_references():
+    try:
+        return int(
+            toolkit.config.get(
+                'ckanext.citations.max_references', DEFAULT_MAX_REFERENCES
+            )
+        )
+    except (TypeError, ValueError):
+        return DEFAULT_MAX_REFERENCES
+
+
+def _max_reference_citers():
+    try:
+        return int(
+            toolkit.config.get(
+                'ckanext.citations.max_reference_citers', DEFAULT_MAX_REFERENCE_CITERS
+            )
+        )
+    except (TypeError, ValueError):
+        return DEFAULT_MAX_REFERENCE_CITERS
 
 
 def _upsert_citing_work(package_id, cw, disruption_class, now):

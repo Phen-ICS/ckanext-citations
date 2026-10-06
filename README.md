@@ -72,6 +72,22 @@ ckanext.citations.contact_email = your-team@example.org
 ckanext.citations.request_pause_seconds = 0.1
 ```
 
+## Bounding the disruption index
+
+The reference set and the citers of each reference are capped, so a refresh
+stays cheap even for a work with very popular references:
+
+```ini
+# At most this many references are used for the disruption index.
+ckanext.citations.max_references = 10
+
+# For each reference, only this many citing works are read.
+ckanext.citations.max_reference_citers = 200
+```
+
+With these caps, the "reference only" count is an approximation, and the
+disruption index is diluted by it. Read it as a relative signal.
+
 ## Running a refresh
 
 ```bash

@@ -79,12 +79,22 @@ def _get(path, params, contact_email=None):
 
 def resolve_doi_to_work_id(doi, contact_email=None):
     """Return the bare OpenAlex work id ("W123...") for a DOI, or None if
-    OpenAlex doesn't know about it (e.g. a freshly-minted dataset DOI it
-    hasn't crawled yet)."""
-    data = _get(f'/works/doi:{doi}', {}, contact_email=contact_email)
-    if not data:
+    OpenAlex doesn't know about it.
+
+    One DOI can have several OpenAlex records (e.g. an article and a dataset
+    record sharing the same references). The one with the most citations is
+    the one that carries the citation signal, so it wins.
+    """
+    data = _get(
+        '/works',
+        {'filter': f'doi:{doi}', 'per-page': 10, 'select': 'id,cited_by_count'},
+        contact_email=contact_email,
+    )
+    records = (data or {}).get('results') or []
+    if not records:
         return None
-    return _short_id(data.get('id'))
+    best = max(records, key=lambda r: r.get('cited_by_count') or 0)
+    return _short_id(best.get('id'))
 
 
 def get_work(work_id, contact_email=None):
@@ -96,10 +106,12 @@ def get_work(work_id, contact_email=None):
     return _parse_work(data)
 
 
-def iter_citing_works(work_id, contact_email=None, pause_seconds=0.1):
-    """Yield every Work that cites `work_id`, paginated via OpenAlex's cursor
-    pagination. Each item is the dict shape returned by _parse_work."""
+def iter_citing_works(work_id, contact_email=None, pause_seconds=0.1, max_items=None):
+    """Yield the Works that cite `work_id`, paginated via OpenAlex's cursor
+    pagination. Each item is the dict shape returned by _parse_work. Stops after
+    `max_items` when given."""
     cursor = '*'
+    yielded = 0
     while cursor:
         data = _get(
             '/works',
@@ -110,6 +122,9 @@ def iter_citing_works(work_id, contact_email=None, pause_seconds=0.1):
             return
         for item in data.get('results', []):
             yield _parse_work(item)
+            yielded += 1
+            if max_items is not None and yielded >= max_items:
+                return
         cursor = (data.get('meta') or {}).get('next_cursor')
         if cursor:
             time.sleep(pause_seconds)
