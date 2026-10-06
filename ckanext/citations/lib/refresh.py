@@ -238,12 +238,13 @@ def _update_sindex_contributions(pkg, citing_works, now):
     if not focal_authors:
         return
 
-    citing_people = []
+    unique_people = {}
     for cw in citing_works:
         for author in cw.get('authors') or []:
             key, key_type = citing_person_key(author)
-            if key:
-                citing_people.append((key, key_type, author.get('name')))
+            if key and key not in unique_people:
+                unique_people[key] = (key, key_type, author.get('name'))
+    citing_people = list(unique_people.values())
 
     for orcid, author_name in focal_authors:
         for key, key_type, display_name in citing_people:
