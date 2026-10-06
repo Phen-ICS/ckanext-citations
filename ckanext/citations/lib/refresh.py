@@ -74,9 +74,9 @@ def refresh_dataset(package_id):
         )
         Session.add(stats)
 
-    work_id = stats.openalex_work_id or openalex_client.resolve_doi_to_work_id(
-        doi, contact_email
-    )
+    # Resolved on every refresh: a cached id could point at the wrong record
+    # forever, and one lookup per refresh is cheap next to the citing works.
+    work_id = openalex_client.resolve_doi_to_work_id(doi, contact_email)
 
     if not work_id:
         _refresh_via_datacite_fallback(stats, doi)
@@ -198,10 +198,13 @@ def _max_reference_citers():
 
 
 def _upsert_citing_work(package_id, cw, disruption_class, now):
+    # Keyed on the OpenAlex id: a citing work without a DOI would otherwise
+    # match any other DOI-less row (SQLAlchemy turns `== None` into IS NULL).
     existing = (
         Session.query(CitingWork)
         .filter(
-            CitingWork.package_id == package_id, CitingWork.citing_doi == cw.get('doi')
+            CitingWork.package_id == package_id,
+            CitingWork.openalex_work_id == cw.get('openalex_work_id'),
         )
         .first()
     )
