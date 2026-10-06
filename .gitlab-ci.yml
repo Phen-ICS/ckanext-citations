@@ -74,10 +74,32 @@ build:package:
     - pip install build twine
     - python -m build
     - twine check dist/*
+    # fair3r-docker-alt fetches this job's artifact by ID (trigger below).
+    - echo "BUILD_JOB_ID=$CI_JOB_ID" > build.env
   artifacts:
     expire_in: 7 days
     paths:
       - dist/
+    reports:
+      dotenv: build.env
+
+# Starts the integration deploy and tests in fair3r-docker-alt on each MR.
+trigger:fair3r-docker-alt:integration:
+  stage: publish
+  needs:
+    - job: build:package
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: on_success
+    - when: never
+  variables:
+    CITATIONS_PLUGIN_REF: $CI_COMMIT_REF_NAME
+    CITATIONS_BUILD_JOB_ID: $BUILD_JOB_ID
+    CI_MERGE_REQUEST_IID: $CI_MERGE_REQUEST_IID
+  trigger:
+    project: ics/fair3r-docker-alt
+    branch: main
+    strategy: depend
 
 # Publishes to the public PyPI on every push to main. Needs the masked
 # PYPI_API_TOKEN CI/CD variable. version:check guarantees each merge carries a
