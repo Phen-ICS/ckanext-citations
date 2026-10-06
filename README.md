@@ -72,6 +72,16 @@ ckanext.citations.contact_email = your-team@example.org
 ckanext.citations.request_pause_seconds = 0.1
 ```
 
+## S-index
+
+The S-index is cumulative: the number of distinct researchers (by ORCID, or
+by normalised name when there is no ORCID) that an author's FAIR3R datasets
+have reached since tracking started. A researcher is never removed, because
+OpenAlex data is not stable (merged, re-linked or temporarily missing works)
+and a recalculation from the current citers would lower the score without any
+real change. `s_index_max` is kept as a safety net, and equals the current
+value in practice.
+
 ## Bounding the disruption index
 
 The reference set and the citers of each reference are capped, so a refresh

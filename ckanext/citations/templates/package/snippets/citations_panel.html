@@ -74,7 +74,7 @@
           <tr>
             <th scope="row">
               {{ _('S-index') }}
-              <span class="citations-tip" tabindex="0" data-tip="{{ _('Number of distinct researchers (identified by ORCID) who have cited at least one of this author FAIR3R datasets. Shown for the highest co-author with an ORCID.') }}"><i class="fa fa-info-circle"></i></span>
+              <span class="citations-tip" tabindex="0" data-tip="{{ _('Distinct researchers (identified by ORCID, or by name when no ORCID) that this author's FAIR3R datasets have reached since tracking started. Cumulative: a researcher is never removed, even if a citation later disappears. Shown for the highest co-author with an ORCID.') }}"><i class="fa fa-info-circle"></i></span>
             </th>
             <td>
               {{ stats.top_s_index }}
