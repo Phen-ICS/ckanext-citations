@@ -2,7 +2,7 @@
 
 {% block primary_content_inner %}
   {{ super() }}
-  {% if pkg.state == 'active' %}
+  {% if pkg.state != 'deleted' %}
     {% snippet 'package/snippets/citations_panel.html', pkg_dict=pkg %}
   {% endif %}
 {% endblock %}
