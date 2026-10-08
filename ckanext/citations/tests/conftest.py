@@ -60,9 +60,9 @@ def pytest_sessionstart(session):
     if db_name and not re.search('test', db_name, re.IGNORECASE):
         raise pytest.UsageError(
             f"Refusing to run: resolved database '{db_name}' (from "
-            f"{ckan_ini or 'CKAN_INI'}) does not look like a test database "
+            f'{ckan_ini or "CKAN_INI"}) does not look like a test database '
             "(expected a name containing 'test'). This check cannot be "
-            "bypassed - point --ckan-ini (or CKAN_INI) at a test config."
+            'bypassed - point --ckan-ini (or CKAN_INI) at a test config.'
         )
 
     if os.environ.get('CITATIONS_ALLOW_NON_TEST_INI') == '1':
