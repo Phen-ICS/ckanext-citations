@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-citations 0.1.6\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-06 14:51+0000\n"
+"POT-Creation-Date: 2026-10-08 08:50+0000\n"
 "PO-Revision-Date: 2026-10-05 15:53+0000\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: fr <LL@li.org>\n"
@@ -19,15 +19,19 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:20
+#: ckanext/citations/templates/package/snippets/citations_panel.html:21
 msgid "FAIR & Impact"
 msgstr "FAIR & Impact"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:29
+#: ckanext/citations/templates/package/snippets/citations_panel.html:22
+msgid "User guide"
+msgstr "Guide utilisateur"
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:32
 msgid "Completeness"
 msgstr "Complétude"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:30
+#: ckanext/citations/templates/package/snippets/citations_panel.html:33
 msgid ""
 "How complete the FAIR3R metadata of this dataset is: the weighted share of "
 "the fields that apply (required fields count double), CKAN basics included. "
@@ -38,23 +42,23 @@ msgstr ""
 "incluant les champs de base de CKAN. Les champs conditionnels masqués sont "
 "ignorés."
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:38
+#: ckanext/citations/templates/package/snippets/citations_panel.html:41
 msgid "Missing fields"
 msgstr "Champs manquants"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:50
+#: ckanext/citations/templates/package/snippets/citations_panel.html:54
 msgid "Citations"
 msgstr "Citations"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:55
+#: ckanext/citations/templates/package/snippets/citations_panel.html:59
 msgid "last checked"
 msgstr "dernière vérification"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:62
+#: ckanext/citations/templates/package/snippets/citations_panel.html:66
 msgid "Disruption index"
 msgstr "Indice de disruption"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:63
+#: ckanext/citations/templates/package/snippets/citations_panel.html:67
 msgid ""
 "Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works "
 "citing this dataset tend to replace it; close to -1 means they build on it "
@@ -71,16 +75,16 @@ msgstr ""
 "l'indice reste proche de 0, il sert donc à comparer des datasets, pas comme "
 "valeur absolue."
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:69
+#: ckanext/citations/templates/package/snippets/citations_panel.html:73
 msgid "not enough data yet"
 msgstr "pas assez de données pour l'instant"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:76
-#: ckanext/citations/templates/package/snippets/citations_panel.html:87
+#: ckanext/citations/templates/package/snippets/citations_panel.html:80
+#: ckanext/citations/templates/package/snippets/citations_panel.html:91
 msgid "S-index"
 msgstr "S-index"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:77
+#: ckanext/citations/templates/package/snippets/citations_panel.html:81
 msgid ""
 "Distinct researchers (identified by ORCID, or by name when no ORCID) that "
 "the FAIR3R datasets of this author have reached since tracking started. "
@@ -93,53 +97,57 @@ msgstr ""
 " Affiché pour le co-auteur ayant le plus haut score, parmi ceux qui ont un "
 "ORCID."
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:82
+#: ckanext/citations/templates/package/snippets/citations_panel.html:86
 msgid "highest among co-authors"
 msgstr "le plus élevé parmi les co-auteurs"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:84
+#: ckanext/citations/templates/package/snippets/citations_panel.html:88
 msgid "All co-authors"
 msgstr "Tous les co-auteurs"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:99
+#: ckanext/citations/templates/package/snippets/citations_panel.html:104
+msgid ""
+"Citations, disruption index and S-index are shown once this dataset is "
+"public."
+msgstr ""
+"Les citations, l'indice de disruption et le S-index sont affichés une fois "
+"ce jeu de données rendu public."
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:106
 msgid ""
 "Not checked yet: citations are tracked once the dataset has a published DOI."
 msgstr ""
 "Pas encore vérifié : les citations sont suivies une fois le dataset publié "
 "avec un DOI."
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:103
+#: ckanext/citations/templates/package/snippets/citations_panel.html:110
 msgid "Citing works"
 msgstr "Œuvres citantes"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:107
+#: ckanext/citations/templates/package/snippets/citations_panel.html:114
 msgid "Title"
 msgstr "Titre"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:108
+#: ckanext/citations/templates/package/snippets/citations_panel.html:115
 msgid "Authors"
 msgstr "Auteurs"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:109
+#: ckanext/citations/templates/package/snippets/citations_panel.html:116
 msgid "Year"
 msgstr "Année"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:110
+#: ckanext/citations/templates/package/snippets/citations_panel.html:117
 msgid "Venue"
 msgstr "Revue"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:111
+#: ckanext/citations/templates/package/snippets/citations_panel.html:118
 msgid "DOI"
 msgstr "DOI"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:134
+#: ckanext/citations/templates/package/snippets/citations_panel.html:141
 #, python-format
 msgid "Show all %(count)s citing works"
 msgstr "Afficher les %(count)s œuvres citantes"
-
-#: ckanext/citations/templates/package/snippets/citations_panel.html:158
-msgid "User guide"
-msgstr "Guide utilisateur"
 
 #~ msgid ""
 #~ "Number of distinct researchers (identified by ORCID) who have cited at least"

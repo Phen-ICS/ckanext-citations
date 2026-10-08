@@ -7,9 +7,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: ckanext-citations 0.1.15\n"
+"Project-Id-Version: ckanext-citations 0.1.18\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-06 14:51+0000\n"
+"POT-Creation-Date: 2026-10-08 08:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,38 +18,42 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:20
+#: ckanext/citations/templates/package/snippets/citations_panel.html:21
 msgid "FAIR & Impact"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:29
+#: ckanext/citations/templates/package/snippets/citations_panel.html:22
+msgid "User guide"
+msgstr ""
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:32
 msgid "Completeness"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:30
+#: ckanext/citations/templates/package/snippets/citations_panel.html:33
 msgid ""
 "How complete the FAIR3R metadata of this dataset is: the weighted share of "
 "the fields that apply (required fields count double), CKAN basics included. "
 "Conditional fields that are hidden are ignored."
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:38
+#: ckanext/citations/templates/package/snippets/citations_panel.html:41
 msgid "Missing fields"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:50
+#: ckanext/citations/templates/package/snippets/citations_panel.html:54
 msgid "Citations"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:55
+#: ckanext/citations/templates/package/snippets/citations_panel.html:59
 msgid "last checked"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:62
+#: ckanext/citations/templates/package/snippets/citations_panel.html:66
 msgid "Disruption index"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:63
+#: ckanext/citations/templates/package/snippets/citations_panel.html:67
 msgid ""
 "Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works "
 "citing this dataset tend to replace it; close to -1 means they build on it "
@@ -59,16 +63,16 @@ msgid ""
 "close to 0, so use it to compare datasets, not as an absolute value."
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:69
+#: ckanext/citations/templates/package/snippets/citations_panel.html:73
 msgid "not enough data yet"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:76
-#: ckanext/citations/templates/package/snippets/citations_panel.html:87
+#: ckanext/citations/templates/package/snippets/citations_panel.html:80
+#: ckanext/citations/templates/package/snippets/citations_panel.html:91
 msgid "S-index"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:77
+#: ckanext/citations/templates/package/snippets/citations_panel.html:81
 msgid ""
 "Distinct researchers (identified by ORCID, or by name when no ORCID) that the"
 " FAIR3R datasets of this author have reached since tracking started. "
@@ -76,48 +80,48 @@ msgid ""
 "disappears. Shown for the highest co-author with an ORCID."
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:82
+#: ckanext/citations/templates/package/snippets/citations_panel.html:86
 msgid "highest among co-authors"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:84
+#: ckanext/citations/templates/package/snippets/citations_panel.html:88
 msgid "All co-authors"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:99
+#: ckanext/citations/templates/package/snippets/citations_panel.html:104
+msgid "Citations, disruption index and S-index are shown once this dataset is public."
+msgstr ""
+
+#: ckanext/citations/templates/package/snippets/citations_panel.html:106
 msgid "Not checked yet: citations are tracked once the dataset has a published DOI."
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:103
+#: ckanext/citations/templates/package/snippets/citations_panel.html:110
 msgid "Citing works"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:107
+#: ckanext/citations/templates/package/snippets/citations_panel.html:114
 msgid "Title"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:108
+#: ckanext/citations/templates/package/snippets/citations_panel.html:115
 msgid "Authors"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:109
+#: ckanext/citations/templates/package/snippets/citations_panel.html:116
 msgid "Year"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:110
+#: ckanext/citations/templates/package/snippets/citations_panel.html:117
 msgid "Venue"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:111
+#: ckanext/citations/templates/package/snippets/citations_panel.html:118
 msgid "DOI"
 msgstr ""
 
-#: ckanext/citations/templates/package/snippets/citations_panel.html:134
+#: ckanext/citations/templates/package/snippets/citations_panel.html:141
 #, python-format
 msgid "Show all %(count)s citing works"
-msgstr ""
-
-#: ckanext/citations/templates/package/snippets/citations_panel.html:158
-msgid "User guide"
 msgstr ""
 

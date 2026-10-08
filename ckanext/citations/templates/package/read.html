@@ -2,7 +2,7 @@
 
 {% block primary_content_inner %}
   {{ super() }}
-  {% if pkg.state == 'active' and not pkg.private %}
+  {% if pkg.state == 'active' %}
     {% snippet 'package/snippets/citations_panel.html', pkg_dict=pkg %}
   {% endif %}
 {% endblock %}
