@@ -91,7 +91,9 @@ def test_sindex_deduplicates_citing_researchers_across_datasets():
 
 @pytest.mark.usefixtures('clean_db')
 def test_panel_renders_on_dataset_page(app):
-    dataset = factories.Dataset(private=False)
+    # CKAN requires an owner_org for a public (private=False) dataset.
+    org = factories.Organization()
+    dataset = factories.Dataset(private=False, owner_org=org['id'])
     Session.add(
         model.CitationStats(
             package_id=dataset['id'],
@@ -108,6 +110,40 @@ def test_panel_renders_on_dataset_page(app):
     assert response.status_code == 200
     assert 'id="citations-panel"' in response.body
     assert 'Disruption index' in response.body
+
+
+@pytest.mark.usefixtures('clean_db')
+def test_panel_hides_citation_stats_on_private_dataset(app):
+    # CKAN requires an owner_org for a private dataset too (an unowned
+    # dataset can only be public). Citations/disruption/S-index are tied to
+    # a published DOI, which a private dataset can't have - the panel must
+    # still render (so that completeness, when ckanext-fair3r is loaded,
+    # has somewhere to show), but must not leak citation data gathered from
+    # a time the dataset may have been public.
+    user = factories.SysadminWithToken()
+    org = factories.Organization()
+    dataset = factories.Dataset(private=True, owner_org=org['id'])
+    Session.add(
+        model.CitationStats(
+            package_id=dataset['id'],
+            citation_count_current=4,
+            citation_count_max=4,
+            disruption_index=0.25,
+            last_checked=_now(),
+        )
+    )
+    Session.commit()
+
+    response = app.get(
+        f'/dataset/{dataset["name"]}',
+        headers={'Authorization': user['token']},
+    )
+
+    assert response.status_code == 200
+    assert 'id="citations-panel"' in response.body
+    assert 'Disruption index' not in response.body
+    assert 'Citing works' not in response.body
+    assert 'shown once this dataset is public' in response.body
 
 
 @pytest.mark.usefixtures('clean_db')

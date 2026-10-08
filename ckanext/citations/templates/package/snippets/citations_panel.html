@@ -49,60 +49,64 @@
             </td>
           </tr>
         {% endif %}
-        <tr>
-          <th scope="row">{{ _('Citations') }}</th>
-          <td>
-            {{ stats.citation_count if stats.checked else "—" }}
-            {% if stats.last_checked %}
-              <small class="text-muted">
-                ({{ _('last checked') }} {{ h.render_datetime(stats.last_checked) }})
-              </small>
-            {% endif %}
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">
-            {{ _('Disruption index') }}
-            <span class="citations-tip" tabindex="0" data-tip="{{ _('Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works citing this dataset tend to replace it; close to -1 means they build on it together with its own references. Uses the dataset References/Cites related identifiers when present. To stay fast, only a limited number of references and citing works are used: when references are widely cited, the index stays close to 0, so use it to compare datasets, not as an absolute value.') }}"><i class="fa fa-info-circle"></i></span>
-          </th>
-          <td>
-            {% if stats.disruption_index is not none %}
-              {{ '%.2f' % stats.disruption_index }}
-            {% else %}
-              <span class="text-muted">{{ _('not enough data yet') }}</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% if stats.coauthors %}
+        {% if not pkg_dict.private %}
           <tr>
-            <th scope="row">
-              {{ _('S-index') }}
-              <span class="citations-tip" tabindex="0" data-tip="{{ _('Distinct researchers (identified by ORCID, or by name when no ORCID) that the FAIR3R datasets of this author have reached since tracking started. Cumulative: a researcher is never removed, even if a citation later disappears. Shown for the highest co-author with an ORCID.') }}"><i class="fa fa-info-circle"></i></span>
-            </th>
+            <th scope="row">{{ _('Citations') }}</th>
             <td>
-              {{ stats.top_s_index }}
-              {% if stats.coauthors|length > 1 %}
-                <small class="text-muted">({{ _('highest among co-authors') }})</small>
-                <details>
-                  <summary>{{ _('All co-authors') }}</summary>
-                  <ul class="list-unstyled">
-                    {% for author in stats.coauthors %}
-                      <li>{{ author.name or author.orcid }} — {{ _('S-index') }}: {{ author.s_index }}</li>
-                    {% endfor %}
-                  </ul>
-                </details>
+              {{ stats.citation_count if stats.checked else "—" }}
+              {% if stats.last_checked %}
+                <small class="text-muted">
+                  ({{ _('last checked') }} {{ h.render_datetime(stats.last_checked) }})
+                </small>
               {% endif %}
             </td>
           </tr>
+          <tr>
+            <th scope="row">
+              {{ _('Disruption index') }}
+              <span class="citations-tip" tabindex="0" data-tip="{{ _('Wu, Wang & Evans (2019). Between -1 and +1: close to +1 means the works citing this dataset tend to replace it; close to -1 means they build on it together with its own references. Uses the dataset References/Cites related identifiers when present. To stay fast, only a limited number of references and citing works are used: when references are widely cited, the index stays close to 0, so use it to compare datasets, not as an absolute value.') }}"><i class="fa fa-info-circle"></i></span>
+            </th>
+            <td>
+              {% if stats.disruption_index is not none %}
+                {{ '%.2f' % stats.disruption_index }}
+              {% else %}
+                <span class="text-muted">{{ _('not enough data yet') }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% if stats.coauthors %}
+            <tr>
+              <th scope="row">
+                {{ _('S-index') }}
+                <span class="citations-tip" tabindex="0" data-tip="{{ _('Distinct researchers (identified by ORCID, or by name when no ORCID) that the FAIR3R datasets of this author have reached since tracking started. Cumulative: a researcher is never removed, even if a citation later disappears. Shown for the highest co-author with an ORCID.') }}"><i class="fa fa-info-circle"></i></span>
+              </th>
+              <td>
+                {{ stats.top_s_index }}
+                {% if stats.coauthors|length > 1 %}
+                  <small class="text-muted">({{ _('highest among co-authors') }})</small>
+                  <details>
+                    <summary>{{ _('All co-authors') }}</summary>
+                    <ul class="list-unstyled">
+                      {% for author in stats.coauthors %}
+                        <li>{{ author.name or author.orcid }} — {{ _('S-index') }}: {{ author.s_index }}</li>
+                      {% endfor %}
+                    </ul>
+                  </details>
+                {% endif %}
+              </td>
+            </tr>
+          {% endif %}
         {% endif %}
       </tbody>
     </table>
 
-    {% if not stats.checked %}
+    {% if pkg_dict.private %}
+      <p class="text-muted">{{ _('Citations, disruption index and S-index are shown once this dataset is public.') }}</p>
+    {% elif not stats.checked %}
       <p class="text-muted">{{ _('Not checked yet: citations are tracked once the dataset has a published DOI.') }}</p>
     {% endif %}
 
-    {% if stats.citing_works %}
+    {% if not pkg_dict.private and stats.citing_works %}
       <h3>{{ _('Citing works') }}</h3>
       <table class="table table-condensed">
         <thead>
