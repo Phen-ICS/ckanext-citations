@@ -1,0 +1,56 @@
+# Listing for the CKAN Ecosystem Catalog (https://ecosystem.ckan.org).
+# Fields left out are filled in from the GitHub repository.
+
+description: Tracks how often a dataset is cited (OpenAlex, with DataCite Event Data as fallback) and shows a citation count, a disruption index and a per-researcher S-index on the dataset page.
+
+detailed_info: |
+  ## Overview
+  Shows the scholarly impact of a dataset on its CKAN page, in a "FAIR &
+  Impact" panel. Citations are refreshed by a periodic batch job and stored
+  in the plugin's own tables, so a refresh never touches the datasets or
+  triggers a Solr reindex.
+
+  ## Features
+  - **Citation count** (cited-by) per dataset, from OpenAlex, falling back to
+    DataCite Event Data.
+  - **Disruption index** (Wu, Wang & Evans, 2019): whether citing works build
+    on the dataset alone or also on its sources. The reference list is
+    enriched with the dataset's DataCite `relatedIdentifiers`.
+  - **S-index** per researcher: the number of distinct researchers (by ORCID,
+    else by normalised name) whose work cites that researcher's datasets. It
+    never decreases when an external API changes.
+  - **Dataset page panel**: citation count, disruption index, S-index with a
+    co-author breakdown and a table of citing works.
+
+  ## Requirements
+  CKAN 2.12. The plugin creates five tables with
+  `ckan db upgrade -p citations`. A dataset's DOI is read from
+  [ckanext-doi](https://github.com/Phen-ICS/ckanext-doi): only datasets whose
+  DOI that plugin has published are tracked.
+
+  ## Usage
+  ```ini
+  ckan.plugins = ... citations
+  ckanext.citations.contact_email = your-team@example.org
+  ```
+
+  ```shell
+  ckan citations refresh --min-age-days 7
+  ```
+  Run it from a weekly cron job; it is idempotent and only touches datasets
+  last checked more than `--min-age-days` ago.
+
+extension_type: metadata
+
+ckan_versions:
+  - "2.12"
+
+contact_name: Phen-ICS (IGBMC)
+contact_email: fair3r@igbmc.fr
+
+tags:
+  - citations
+  - openalex
+  - datacite
+  - impact
+  - s-index
