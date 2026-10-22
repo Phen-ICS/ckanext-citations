@@ -20,7 +20,9 @@ def citations_get_stats(package_id, package_dict=None):
                 {
                     'orcid': orcid,
                     'name': name,
-                    's_index': sindex.s_index_current if sindex else 0,
+                    # The high-water mark: purging a dataset removes the
+                    # researchers found through it, the S-index never drops.
+                    's_index': sindex.s_index_max if sindex else 0,
                 }
             )
     coauthors.sort(key=lambda a: a['s_index'], reverse=True)

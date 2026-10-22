@@ -7,82 +7,45 @@ feed the disruption index or the S-index - they only contribute to
 citation_count_current.
 """
 
-import logging
-import time
-
-import requests
-
-log = logging.getLogger(__name__)
+from ckanext.citations.lib import http
 
 BASE_URL = 'https://api.datacite.org/events'
-REQUEST_TIMEOUT = 20
-MAX_RETRIES = 4
-INITIAL_BACKOFF_SECONDS = 1.0
 
 
 class DataciteEventsError(Exception):
     pass
 
 
-def _get_with_backoff(params):
-    backoff = INITIAL_BACKOFF_SECONDS
-    last_error = None
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            resp = requests.get(BASE_URL, params=params, timeout=REQUEST_TIMEOUT)
-        except requests.RequestException as e:
-            last_error = f'DataCite Event Data request failed: {e}'
-            log.warning(
-                '%s (attempt %s/%s, retrying in %.1fs)',
-                last_error,
-                attempt,
-                MAX_RETRIES,
-                backoff,
-            )
-            time.sleep(backoff)
-            backoff *= 2.0
-            continue
-
-        if resp.status_code == 200:
-            return resp.json()
-        if resp.status_code == 429 or resp.status_code >= 500:
-            last_error = (
-                f'DataCite Event Data returned {resp.status_code}: {resp.text[:200]}'
-            )
-            log.warning(
-                '%s (attempt %s/%s, retrying in %.1fs)',
-                last_error,
-                attempt,
-                MAX_RETRIES,
-                backoff,
-            )
-            time.sleep(backoff)
-            backoff *= 2.0
-            continue
-        raise DataciteEventsError(
-            f'DataCite Event Data returned {resp.status_code}: {resp.text[:200]}'
-        )
-
-    raise DataciteEventsError(
-        f'DataCite Event Data request failed after {MAX_RETRIES} attempts: {last_error}'
-    )
+def _bare_doi(doi_url):
+    """'https://doi.org/10.x/y' -> '10.x/y', lowercased (DOIs are case-
+    insensitive); '' for anything that isn't a doi.org URL."""
+    if 'doi.org/' not in (doi_url or ''):
+        return ''
+    return doi_url.split('doi.org/', 1)[-1].lower()
 
 
 def get_citing_dois(doi):
     """Return the list of citing DOIs for `doi` via the is-cited-by relation.
     Returns [] if DataCite has no events for this DOI (not an error - most
-    datasets simply won't have any yet)."""
+    datasets simply won't have any yet).
+
+    In an "A is-cited-by B" event, B (obj-id) is the citing work. The `doi`
+    filter matches either side, so only events where A (subj-id) is this
+    DOI count. Attribute names are hyphenated (subj-id, obj-id)."""
     params = {
         'doi': doi,
         'relation-type-id': 'is-cited-by',
         'page[size]': 200,
     }
-    data = _get_with_backoff(params)
+    # shortcut: first page (200 events) only, paginate if a dataset ever gets more.
+    data = http.get_json(BASE_URL, params, DataciteEventsError) or {}
+    own = doi.lower()
     citing_dois = []
     for event in data.get('data', []):
         attrs = event.get('attributes', {})
-        subj_id = attrs.get('subjId') or ''
-        # subjId is the citing work's DOI as a URL (https://doi.org/10.xxx/yyy).
-        if 'doi.org/' in subj_id:
-            citing_dois.append(subj_id.split('doi.org/', 1)[-1])
+        if _bare_doi(attrs.get('subj-id')) != own:
+            continue
+        citing = _bare_doi(attrs.get('obj-id'))
+        if citing and citing not in citing_dois:
+            citing_dois.append(citing)
     return citing_dois
