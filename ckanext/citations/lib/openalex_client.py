@@ -7,18 +7,12 @@ No API key needed; OpenAlex asks callers to pass a contact email ("polite
 pool") for better rate limits rather than for auth.
 """
 
-import logging
 import time
 
-import requests
-
-log = logging.getLogger(__name__)
+from ckanext.citations.lib import http
 
 BASE_URL = 'https://api.openalex.org'
-REQUEST_TIMEOUT = 20
 PAGE_SIZE = 200
-MAX_RETRIES = 4
-INITIAL_BACKOFF_SECONDS = 1.0
 
 
 class OpenAlexError(Exception):
@@ -26,55 +20,10 @@ class OpenAlexError(Exception):
 
 
 def _get(path, params, contact_email=None):
-    """GET with exponential backoff on 429 (rate limit) and 5xx/network
-    errors - a refresh run hits this API for every citing work of every
-    reference of every dataset, so transient failures are the common case,
-    not the exception."""
     params = dict(params)
     if contact_email:
         params['mailto'] = contact_email
-
-    backoff = INITIAL_BACKOFF_SECONDS
-    last_error = None
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            resp = requests.get(
-                f'{BASE_URL}{path}', params=params, timeout=REQUEST_TIMEOUT
-            )
-        except requests.RequestException as e:
-            last_error = f'OpenAlex request failed: {e}'
-            log.warning(
-                '%s (attempt %s/%s, retrying in %.1fs)',
-                last_error,
-                attempt,
-                MAX_RETRIES,
-                backoff,
-            )
-            time.sleep(backoff)
-            backoff *= 2.0
-            continue
-
-        if resp.status_code == 200:
-            return resp.json()
-        if resp.status_code == 404:
-            return None
-        if resp.status_code == 429 or resp.status_code >= 500:
-            last_error = f'OpenAlex returned {resp.status_code}: {resp.text[:200]}'
-            log.warning(
-                '%s (attempt %s/%s, retrying in %.1fs)',
-                last_error,
-                attempt,
-                MAX_RETRIES,
-                backoff,
-            )
-            time.sleep(backoff)
-            backoff *= 2.0
-            continue
-        raise OpenAlexError(f'OpenAlex returned {resp.status_code}: {resp.text[:200]}')
-
-    raise OpenAlexError(
-        f'OpenAlex request failed after {MAX_RETRIES} attempts: {last_error}'
-    )
+    return http.get_json(f'{BASE_URL}{path}', params, OpenAlexError)
 
 
 def resolve_doi_to_work_id(doi, contact_email=None):

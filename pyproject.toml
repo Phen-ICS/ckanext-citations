@@ -1,6 +1,6 @@
 [project]
 name = "ckanext-citations"
-version = "0.1.22"
+version = "0.1.23"
 description = "Citation tracking (cited-by via OpenAlex/DataCite Event Data), dataset disruption index and per-researcher S-index, displayed on the dataset page."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -17,7 +17,6 @@ dependencies = [
 test = [
     "pytest==7.4.4",
     "pytest-cov==4.1.0",
-    "responses",
 ]
 
 [project.entry-points."ckan.plugins"]

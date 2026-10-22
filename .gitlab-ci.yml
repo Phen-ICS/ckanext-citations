@@ -61,12 +61,13 @@ security:bandit:
 test:pure-unit:
   stage: validate
   variables:
-    # These tests import only scoring.py/package_extras.py (no ckan import),
-    # so the conftest.py guard that requires --ckan-ini=test.ini doesn't apply.
+    # These tests import only scoring.py/package_extras.py/the API clients
+    # (no ckan import), so the conftest.py guard that requires
+    # --ckan-ini=test.ini doesn't apply.
     CITATIONS_ALLOW_NON_TEST_INI: "1"
   script:
-    - pip install pytest==7.4.4 responses
-    - pytest ckanext/citations/tests/test_scoring.py ckanext/citations/tests/test_package_extras.py
+    - pip install pytest==7.4.4 requests
+    - pytest ckanext/citations/tests/test_scoring.py ckanext/citations/tests/test_package_extras.py ckanext/citations/tests/test_clients.py
 
 build:package:
   stage: build

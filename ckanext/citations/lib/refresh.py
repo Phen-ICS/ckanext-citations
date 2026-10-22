@@ -88,6 +88,15 @@ def refresh_dataset(package_id):
     citing_works = list(
         openalex_client.iter_citing_works(work_id, contact_email, pause_seconds=pause)
     )
+    # Every OpenAlex id, duplicates included: all of them are this dataset's
+    # citers when telling reference-only works apart below.
+    cited_focal_ids = {
+        cw['openalex_work_id'] for cw in citing_works if cw['openalex_work_id']
+    }
+    unique_works = {}
+    for cw in citing_works:
+        unique_works.setdefault(_citing_work_key(cw), cw)
+    citing_works = list(unique_works.values())
 
     now = datetime.now(timezone.utc)
     n_fresh = 0
@@ -110,9 +119,10 @@ def refresh_dataset(package_id):
 
         reference_work_ids = reference_work_ids[:max_references]
 
-        cited_focal_ids = set()
         existing_works = {
-            row.openalex_work_id: row
+            _citing_work_key(
+                {'doi': row.citing_doi, 'openalex_work_id': row.openalex_work_id}
+            ): row
             for row in Session.query(CitingWork).filter(
                 CitingWork.package_id == package_id
             )
@@ -123,8 +133,6 @@ def refresh_dataset(package_id):
                 n_building += 1
             else:
                 n_fresh += 1
-            if cw['openalex_work_id']:
-                cited_focal_ids.add(cw['openalex_work_id'])
             _upsert_citing_work(package_id, cw, cls, now, existing_works)
 
         if reference_work_ids:
@@ -221,10 +229,17 @@ def _max_reference_citers():
         return DEFAULT_MAX_REFERENCE_CITERS
 
 
+def _citing_work_key(cw):
+    """One citing work per DOI, as the table's unique (package_id,
+    citing_doi) requires: OpenAlex can hold two records for one DOI, or
+    re-number a record when merging. A work without a DOI goes by its
+    OpenAlex id - matching on a missing DOI would merge unrelated works."""
+    doi = (cw.get('doi') or '').lower()
+    return ('doi', doi) if doi else ('openalex', cw.get('openalex_work_id'))
+
+
 def _upsert_citing_work(package_id, cw, disruption_class, now, existing_works):
-    # Keyed on the OpenAlex id: a citing work without a DOI would otherwise
-    # match any other DOI-less row (SQLAlchemy turns `== None` into IS NULL).
-    existing = existing_works.get(cw.get('openalex_work_id'))
+    existing = existing_works.get(_citing_work_key(cw))
     if existing:
         existing.title = cw.get('title')
         existing.authors = cw.get('authors')
@@ -247,7 +262,7 @@ def _upsert_citing_work(package_id, cw, disruption_class, now, existing_works):
         discovered_at=now,
     )
     Session.add(row)
-    existing_works[cw.get('openalex_work_id')] = row
+    existing_works[_citing_work_key(cw)] = row
 
 
 def _update_sindex_contributions(pkg, citing_works, now):
@@ -301,7 +316,7 @@ def _refresh_author_sindex(orcid, author_name, now):
     )
     record = Session.query(AuthorSIndex).filter(AuthorSIndex.orcid == orcid).first()
     if record is None:
-        record = AuthorSIndex(orcid=orcid, dataset_count=0)
+        record = AuthorSIndex(orcid=orcid)
         Session.add(record)
     record.author_name = author_name or record.author_name
     record.s_index_current = count

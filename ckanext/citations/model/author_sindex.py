@@ -18,7 +18,6 @@ author_sindex_table = Table(
     # disambiguation changes), which could otherwise cause the count to drop
     # even though nothing the author did changed. Never shown decreasing.
     Column('s_index_max', types.Integer, nullable=False, default=0),
-    Column('dataset_count', types.Integer, nullable=False, default=0),
     Column('last_checked', types.DateTime, nullable=True),
 )
 

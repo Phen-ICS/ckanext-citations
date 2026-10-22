@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import pytest
 from ckan.model import Session
 from ckan.tests import factories
@@ -99,3 +101,44 @@ def test_no_citing_work_skips_references_and_focal_lookup(monkeypatch):
     assert stats.citation_count_current == 0
     assert stats.disruption_index is None
     assert stats.last_checked is not None
+
+
+@pytest.mark.usefixtures('clean_db')
+def test_two_openalex_records_for_one_citing_doi_are_one_citing_work(monkeypatch):
+    # OpenAlex re-numbered the work already stored, and has a duplicate
+    # record for the same DOI: inserting either one again would break the
+    # table's unique (package_id, citing_doi) and fail the whole refresh.
+    dataset = factories.Dataset()
+    Session.add(
+        CitingWork(
+            id='row-1',
+            package_id=dataset['id'],
+            citing_doi='10.9/x',
+            openalex_work_id='W_OLD',
+            source='openalex',
+            discovered_at=datetime.now(timezone.utc),
+        )
+    )
+    Session.commit()
+    monkeypatch.setattr(refresh, 'get_published_doi', lambda pkg: '10.1234/fake')
+    monkeypatch.setattr(
+        refresh.openalex_client, 'resolve_doi_to_work_id', lambda doi, email=None: 'W1'
+    )
+    monkeypatch.setattr(
+        refresh.openalex_client,
+        'get_work',
+        lambda work_id, email=None: {'referenced_work_ids': []},
+    )
+    monkeypatch.setattr(
+        refresh.openalex_client,
+        'iter_citing_works',
+        lambda work_id, email=None, pause_seconds=0.1, max_items=None: iter(
+            [_work('W_NEW', '10.9/X'), _work('W_DUP', '10.9/x')]
+        ),
+    )
+
+    refresh.refresh_dataset(dataset['id'])
+
+    rows = Session.query(CitingWork).filter_by(package_id=dataset['id']).all()
+    assert [(r.id, r.openalex_work_id) for r in rows] == [('row-1', 'W_NEW')]
+    assert Session.get(CitationStats, dataset['id']).citation_count_current == 1
