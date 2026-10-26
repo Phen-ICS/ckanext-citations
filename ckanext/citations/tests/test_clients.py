@@ -1,5 +1,4 @@
-"""API clients against fake HTTP responses - no ckan import, runs in the
-pure-unit CI job."""
+"""API clients against fake HTTP responses - no ckan import, no network."""
 
 import pytest
 
