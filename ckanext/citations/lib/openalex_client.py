@@ -3,11 +3,15 @@ needs: resolve a DOI to a Work, list works citing a Work, and fetch a Work's
 own metadata (authors/ORCID, referenced_works) for the disruption-index and
 S-index calculations.
 
-No API key needed; OpenAlex asks callers to pass a contact email ("polite
-pool") for better rate limits rather than for auth.
+A contact email (mailto) is sent when configured. Without an API key
+(ckanext.citations.openalex_api_key), every caller behind the same IP shares
+one free daily budget ($0.10, about 1000 list requests); a free key gives the
+site its own ($1/day).
 """
 
 import time
+
+from ckan.plugins import toolkit
 
 from ckanext.citations.lib import http
 
@@ -23,6 +27,9 @@ def _get(path, params, contact_email=None):
     params = dict(params)
     if contact_email:
         params['mailto'] = contact_email
+    api_key = toolkit.config.get('ckanext.citations.openalex_api_key')
+    if api_key:
+        params['api_key'] = api_key
     return http.get_json(f'{BASE_URL}{path}', params, OpenAlexError)
 
 

@@ -73,6 +73,11 @@ to the focal work's reference set before classifying citing works.
 # limits, not auth). Optional but recommended.
 ckanext.citations.contact_email = your-team@example.org
 
+# OpenAlex API key (free, https://openalex.org/settings/api). Without one,
+# every caller behind the same IP shares one free daily budget ($0.10, about
+# 1000 list requests); with one, the site has its own ($1/day). Optional.
+ckanext.citations.openalex_api_key =
+
 # Pause between outbound API calls during a refresh, in seconds.
 ckanext.citations.request_pause_seconds = 0.1
 ```
