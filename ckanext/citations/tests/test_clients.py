@@ -61,3 +61,35 @@ def test_get_json_404_is_none_and_other_errors_raise(responses):
     assert http.get_json('https://api.test/x', {}, RuntimeError) is None
     with pytest.raises(RuntimeError):
         http.get_json('https://api.test/x', {}, RuntimeError)
+
+
+def test_get_json_never_puts_the_api_key_in_its_errors(monkeypatch, responses):
+    def unreachable(*args, **kwargs):
+        # requests quotes the URL, query string included.
+        raise http.requests.ConnectionError(
+            'Max retries with url: /works?api_key=s3cret'
+        )
+
+    monkeypatch.setattr(http.requests, 'get', unreachable)
+    with pytest.raises(RuntimeError) as failure:
+        http.get_json('https://api.test/x', {'api_key': 's3cret'}, RuntimeError)
+    assert 's3cret' not in str(failure.value)
+
+    responses.append(FakeResponse(403, 'Invalid api_key s3cret'))
+    monkeypatch.setattr(http.requests, 'get', lambda *a, **k: responses.pop(0))
+    with pytest.raises(RuntimeError) as failure:
+        http.get_json('https://api.test/x', {'api_key': 's3cret'}, RuntimeError)
+    assert 's3cret' not in str(failure.value)
+
+
+@pytest.mark.ckan_config('ckanext.citations.openalex_api_key', 'k3y')
+def test_openalex_requests_carry_the_configured_api_key(monkeypatch):
+    from ckanext.citations.lib import openalex_client
+
+    sent = []
+    monkeypatch.setattr(
+        http, 'get_json', lambda url, params, error_cls: sent.append(params) or {}
+    )
+    openalex_client.get_work('W1', contact_email='team@example.org')
+
+    assert sent == [{'mailto': 'team@example.org', 'api_key': 'k3y'}]
